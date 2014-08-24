@@ -157,7 +157,7 @@ Attribution
 
 Thanks to [Charlie Sommerville](https://twitter.com/charliesome) for making eval-in.
 
-Thanks to Mon Oui, I partially stole the implementation from his gem [cinch-eval-in](http://rubygems.org/gems/cinch-eval-in)
+Thanks to Mon Oui, I partially stole the first version of the implementation from his gem [cinch-eval-in](http://rubygems.org/gems/cinch-eval-in)
 
 
 License
