@@ -172,13 +172,13 @@ Run tests with `bundle exec rspec`, run integration tests with `bundle exec rspe
 License
 -------
 
-              DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-     TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+<a href="http://www.wtfpl.net/"><img src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl.svg" height="20" alt="WTFPL" /></a>
 
-    0. You just DO WHAT THE FUCK YOU WANT TO.
+    Copyright (C) 2014 Josh Cheek <josh.cheek@gmail.com>
 
-No Warranty
------------
-
-The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
-
+    This program is free software. It comes without any warranty,
+    to the extent permitted by applicable law.
+    You can redistribute it and/or modify it under the terms of the
+    Do What The Fuck You Want To Public License,
+    Version 2, as published by Sam Hocevar.
+    See http://www.wtfpl.net/ for more details.
