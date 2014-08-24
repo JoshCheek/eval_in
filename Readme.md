@@ -17,10 +17,11 @@ result = EvalIn.call 'puts "hello, #{gets}"', stdin: 'world', language: "ruby/mr
 
 result.output             # => "hello, world\n"
 result.exitstatus         # => 0
+result.url                # => "https://eval.in/182711.json"
 result.language           # => "ruby/mri-2.1"
 result.language_friendly  # => "Ruby — MRI 2.1"
 result.code               # => "puts \"hello, \#{gets}\""
-result.status             # => "OK (0.052 sec real, 0.059 sec wall, 9 MB, 21 syscalls)"
+result.status             # => "OK (0.064 sec real, 0.073 sec wall, 9 MB, 21 syscalls)"
 ```
 
 

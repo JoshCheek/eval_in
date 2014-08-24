@@ -40,7 +40,7 @@ module EvalIn
   ]
 
   class Result
-    attr_accessor :exitstatus, :language, :language_friendly, :code, :output, :status
+    attr_accessor :exitstatus, :language, :language_friendly, :code, :output, :status, :url
 
     def initialize(attributes={})
       attributes = attributes.dup
@@ -50,6 +50,7 @@ module EvalIn
       self.code               = attributes.delete(:code)              || ""
       self.output             = attributes.delete(:output)            || ""
       self.status             = attributes.delete(:status)            || ""
+      self.url                = attributes.delete(:url)               || ""
       $stderr.puts "Unexpected attributes! #{attributes.keys.inspect}" if attributes.any?
     end
   end
@@ -90,7 +91,7 @@ module EvalIn
 
   def self.get_code(location)
     if body = Net::HTTP.get(URI location)
-      JSON.parse body
+      JSON.parse(body).merge('url' => location)
     else
       raise ResultNotFound, "No json at #{location.inspect}"
     end
@@ -109,6 +110,7 @@ module EvalIn
                language_friendly:   response_json['lang_friendly'],
                code:                response_json['code'],
                output:              response_json['output'],
-               status:              response_json['status']
+               status:              response_json['status'],
+               url:                 response_json['url']
   end
 end

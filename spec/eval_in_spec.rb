@@ -35,6 +35,7 @@ RSpec.describe EvalIn, integration: true do
     expect(result.code             ).to eq 'print "hello, #{gets}"'
     expect(result.output           ).to eq "hello, world"
     expect(result.status           ).to match /OK \([\d.]+ sec real, [\d.]+ sec wall, \d MB, \d+ syscalls\)/
+    expect(result.url              ).to match %r(https://eval.in/\d+.json)
   end
 end
 
@@ -62,18 +63,21 @@ RSpec.describe EvalIn::Result do
                   language_friendly: '',
                   code:              '',
                   output:            '',
-                  status:            ''
+                  status:            '',
+                  url:               ''
     assert_result EvalIn::Result.new(language:          nil,
                                      language_friendly: nil,
                                      code:              nil,
                                      output:            nil,
-                                     status:            nil),
+                                     status:            nil,
+                                     url:               nil),
                   exitstatus:        -1,
                   language:          '',
                   language_friendly: '',
                   code:              '',
                   output:            '',
-                  status:            ''
+                  status:            '',
+                  url:               ''
   end
 
   it 'doesn\'t mutate the input attributes' do
@@ -198,24 +202,31 @@ RSpec.describe 'get_code' do
   it 'queries the location, and inflates the json' do
     stub_eval_in(url: "http://example.com/some-result.json")
     result = EvalIn.get_code "http://example.com/some-result.json"
-    expect(result).to eq ruby_result
+    expect(result).to match hash_including(ruby_result)
   end
 
   it 'raises an error when it gets a non-200' do
-    stub_eval_in json_result: '', url: 'http://whatever.com'
-    expect { EvalIn.get_code "http://whatever.com" }.to \
-      raise_error EvalIn::ResultNotFound, %r(http://whatever.com)
+    stub_eval_in json_result: '', url: 'http://example.com'
+    expect { EvalIn.get_code "http://example.com" }.to \
+      raise_error EvalIn::ResultNotFound, %r(http://example.com)
+  end
+
+  it 'adds the url to the result' do
+    stub_eval_in url: 'http://example.com'
+    result = EvalIn.get_code 'http://example.com'
+    expect(result['url']).to eq 'http://example.com'
   end
 end
 
 
 RSpec.describe 'build_result' do
-  let(:language)          { 'some lang' }
+  let(:language)          { 'some lang'          }
   let(:language_friendly) { 'some lang friendly' }
-  let(:code)              { 'some code' }
-  let(:output)            { 'some output' }
-  let(:status)            { 'some status' }
-  let(:response_json)     { {'lang' => language, 'lang_friendly' => language_friendly, 'code' => code, 'output' => output, 'status' => status} }
+  let(:code)              { 'some code'          }
+  let(:output)            { 'some output'        }
+  let(:status)            { 'some status'        }
+  let(:url)               { 'some url'           }
+  let(:response_json)     { {'lang' => language, 'lang_friendly' => language_friendly, 'code' => code, 'output' => output, 'status' => status, 'url' => 'some url'} }
 
   it 'returns a response for the given response json' do
     result = EvalIn.build_result response_json
@@ -225,7 +236,8 @@ RSpec.describe 'build_result' do
                   language_friendly: language_friendly,
                   code:              code,
                   output:            output,
-                  status:            status
+                  status:            status,
+                  url:               url
   end
 
   # exit:      https://eval.in/182586.json
