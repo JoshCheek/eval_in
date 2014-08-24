@@ -71,21 +71,22 @@ module EvalIn
   end
 
   def self.get_code(location)
-    location = URI(location) unless location.kind_of? URI
-    body     = Net::HTTP.get(location)
-    result   = JSON.parse body
-    result.each_with_object({}) do |(key, value), symbolized_result|
-      symbolized_result[key.intern] = value
-    end
+    body   = Net::HTTP.get(URI location)
+    JSON.parse body
   end
 
   def self.build_result(response_json)
-    status = 0
-    Result.new exitstatus:          status,
-               language:            response_json.fetch(:lang),
-               language_friendly:   response_json.fetch(:lang_friendly),
-               code:                response_json.fetch(:code),
-               output:              response_json.fetch(:output),
-               status:              response_json.fetch(:status)
+    status     = response_json['status']
+    exitstatus = if    !status                   then nil # let it choose default
+                 elsif status =~ /status (\d+)$/ then $1.to_i
+                 else                                 0
+                 end
+
+    Result.new exitstatus:          exitstatus,
+               language:            response_json['lang'],
+               language_friendly:   response_json['lang_friendly'],
+               code:                response_json['code'],
+               output:              response_json['output'],
+               status:              response_json['status']
   end
 end

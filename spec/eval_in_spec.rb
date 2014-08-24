@@ -4,9 +4,23 @@ WebMock.disable_net_connect!
 
 RSpec.configure do |config|
   config.filter_run_excluding integration: true
+
+  config.include Module.new {
+    def assert_result(result, attributes)
+      attributes.each do |key, value|
+        expect(result.public_send key).to eq value
+      end
+    end
+  }
 end
 
 RSpec.describe EvalIn, integration: true do
+  around do |spec|
+    WebMock.allow_net_connect!
+    spec.call
+    WebMock.disable_net_connect!
+  end
+
   it 'evaluates Ruby code through eval.in' do
     result = EvalIn.call 'print "hello, #{gets}"', stdin: "world", language: "ruby/mri-1.9.3"
     expect(result.exitstatus       ).to eq 0
@@ -19,12 +33,6 @@ RSpec.describe EvalIn, integration: true do
 end
 
 RSpec.describe EvalIn::Result do
-  def assert_result(result, attributes)
-    attributes.each do |key, value|
-      expect(result.public_send key).to eq value
-    end
-  end
-
   it 'initializes with the provided attributes' do
     result = EvalIn::Result.new exitstatus:        123,
                                 language:          'the language',
@@ -43,6 +51,17 @@ RSpec.describe EvalIn::Result do
 
   it 'uses sensible type-correct defaults for missing attributes' do
     assert_result EvalIn::Result.new,
+                  exitstatus:        -1,
+                  language:          '',
+                  language_friendly: '',
+                  code:              '',
+                  output:            '',
+                  status:            ''
+    assert_result EvalIn::Result.new(language:          nil,
+                                     language_friendly: nil,
+                                     code:              nil,
+                                     output:            nil,
+                                     status:            nil),
                   exitstatus:        -1,
                   language:          '',
                   language_friendly: '',
@@ -135,7 +154,60 @@ RSpec.describe 'post_code' do
   end
 end
 
-get_response = <<RESPONSE
-{"lang":"ruby/mri-1.9.3","lang_friendly":"Ruby — MRI 1.9.3","code":"print \"hello \#{gets}\"","output":"hello world","status":"OK (0.020 sec real, 0.024 sec wall, 7 MB, 41 syscalls)"}
-RESPONSE
 
+
+RSpec.describe 'get_code' do
+  include WebMock::API
+
+  def stub_eval_in(url=url)
+    stub_request(:get, url).to_return(status: 200, body: json_result)
+  end
+
+  let(:ruby_result) { {'lang' => 'some lang', 'lang_friendly' => 'some lang friendly', 'code' => 'some code', 'output' => 'some output', 'status' => 'some status'} }
+  let(:json_result) { JSON.dump ruby_result }
+
+  it 'queries the location, and inflates the json' do
+    stub_eval_in("http://example.com/some-result.json")
+    result = EvalIn.get_code "http://example.com/some-result.json"
+    expect(result).to eq ruby_result
+  end
+end
+
+
+RSpec.describe 'build_result' do
+  let(:language)          { 'some lang' }
+  let(:language_friendly) { 'some lang friendly' }
+  let(:code)              { 'some code' }
+  let(:output)            { 'some output' }
+  let(:status)            { 'some status' }
+  let(:response_json)     { {'lang' => language, 'lang_friendly' => language_friendly, 'code' => code, 'output' => output, 'status' => status} }
+
+  it 'returns a response for the given response json' do
+    result = EvalIn.build_result response_json
+    assert_result result,
+                  exitstatus:        0,
+                  language:          language,
+                  language_friendly: language_friendly,
+                  code:              code,
+                  output:            output,
+                  status:            status
+  end
+
+  # exit:  https://eval.in/182586.json
+  # raise: https://eval.in/182587.json
+  # in C:  https://eval.in/182588.json
+  it 'sets the exit status to that of the program when it is available' do
+    result = EvalIn.build_result response_json.merge('status' => "Exited with error status 123")
+    expect(result.exitstatus).to eq 123
+  end
+
+  it 'sets the exit status to -1 when it is not available' do
+    result = EvalIn.build_result response_json.merge('status' => nil)
+    expect(result.exitstatus).to eq -1
+  end
+
+  it 'sets the exit status to 0 when the status does not imply a nonzero exit status' do
+    result = EvalIn.build_result response_json.merge('status' => 'OK (0.012 sec real, 0.013 sec wall, 7 MB, 22 syscalls)')
+    expect(result.exitstatus).to eq 0
+  end
+end
