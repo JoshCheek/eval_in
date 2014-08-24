@@ -107,7 +107,7 @@ RSpec.describe 'post_code' do
   # \r
   def stub_eval_in(data=expected_data)
     stub_request(:post, url)
-      .with(:body => data)
+      .with(body: data)
       .to_return(status: 302, headers: {'Location' => result_location})
   end
 
@@ -121,6 +121,13 @@ RSpec.describe 'post_code' do
   it 'posts the data to eval_in with utf8, execute on, and the code/language/input forwarded through' do
     stub_eval_in expected_data
     EvalIn.post_code code, stdin: stdin, language: language
+  end
+
+  it 'sets the user agent to its gem homepage' do
+    stub_request(:post, url)
+      .with(headers: {'User-Agent' => 'http://rubygems.org/gems/eval_in'})
+      .to_return(status: 302, headers: {'Location' => result_location})
+    EvalIn.post_code code, language: language
   end
 
   it 'returns the redirect location jsonified' do
