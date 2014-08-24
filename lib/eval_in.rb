@@ -1,8 +1,9 @@
 require 'uri'
 require 'json'
 require 'net/http'
+require 'eval_in/version'
 
-class EvalIn
+module EvalIn
   class Result
     attr_accessor :exitstatus, :language, :language_friendly, :code, :output, :status
 
@@ -19,43 +20,36 @@ class EvalIn
   end
 
   def self.call(code, options={})
-    BuildResult.call GetCode.call PostCode.call(code, options)
+    build_result get_code post_code(code, options)
   end
 
-  module PostCode
-    def self.call(code, options)
-      uri       = options.fetch(:url, "https://eval.in/")
-      uri       = URI(uri) unless uri.kind_of? URI
-      input     = options.fetch(:stdin, "")
-      language  = options.fetch(:language)
-      result    = Net::HTTP.post_form(uri, "utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input)
-      location  = result['location']
-      location += '.json' unless location.end_with? '.json'
-      location
+  def self.post_code(code, options)
+    uri       = options.fetch(:url, "https://eval.in/")
+    uri       = URI(uri) unless uri.kind_of? URI
+    input     = options.fetch(:stdin, "")
+    language  = options.fetch(:language)
+    result    = Net::HTTP.post_form(uri, "utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input)
+    location  = result['location']
+    location += '.json' unless location.end_with? '.json'
+    location
+  end
+
+  def self.get_code(location)
+    location = URI(location) unless location.kind_of? URI
+    body     = Net::HTTP.get(location)
+    result   = JSON.parse body
+    result.each_with_object({}) do |(key, value), symbolized_result|
+      symbolized_result[key.intern] = value
     end
   end
 
-  module GetCode
-    def self.call(location)
-      location = URI(location) unless location.kind_of? URI
-      body     = Net::HTTP.get(location)
-      result   = JSON.parse body
-      result.each_with_object({}) do |(key, value), symbolized_result|
-        symbolized_result[key.intern] = value
-      end
-    end
+  def self.build_result(response_json)
+    status = 0
+    Result.new exitstatus:          status,
+               language:            response_json.fetch(:lang),
+               language_friendly:   response_json.fetch(:lang_friendly),
+               code:                response_json.fetch(:code),
+               output:              response_json.fetch(:output),
+               status:              response_json.fetch(:status)
   end
-
-  module BuildResult
-    def self.call(response_json)
-      status = 0
-      Result.new exitstatus:          status,
-                 language:            response_json.fetch(:lang),
-                 language_friendly:   response_json.fetch(:lang_friendly),
-                 code:                response_json.fetch(:code),
-                 output:              response_json.fetch(:output),
-                 status:              response_json.fetch(:status)
-    end
-  end
-
 end
