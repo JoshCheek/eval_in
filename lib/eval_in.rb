@@ -8,6 +8,7 @@ module EvalIn
   RequestError   = Class.new EvalInError
   ResultNotFound = Class.new EvalInError
 
+  # curl https://eval.in | ruby -rnokogiri -e 'puts Nokogiri::HTML($stdin.read).css("option").map { |o| o["value"] }'
   KNOWN_LANGUAGES = %w[
     c/gcc-4.4.3
     c/gcc-4.9.1
