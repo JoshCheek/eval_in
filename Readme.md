@@ -3,8 +3,27 @@ EvalIn
 
 Safely evaluates code (Ruby and others) by sending it through https://eval.in
 
-Languages and Versions
-----------------------
+Example
+-------
+
+It's this simple:
+
+```ruby
+require 'eval_in'
+
+result = EvalIn.call 'puts "hello, #{gets}"', stdin: 'world', language: "ruby/mri-2.1"
+
+result.output             # => "hello, world\n"
+result.exitstatus         # => 0
+result.language           # => "ruby/mri-2.1"
+result.language_friendly  # => "Ruby — MRI 2.1"
+result.code               # => "puts \"hello, \#{gets}\""
+result.status             # => "OK (0.052 sec real, 0.059 sec wall, 9 MB, 21 syscalls)"
+```
+
+
+What languages can this run?
+----------------------------
 
 <table>
   <tr>
@@ -129,39 +148,6 @@ Languages and Versions
     </td>
   </tr>
 </table>
-
-
-Example
--------
-
-It's this simple:
-
-```ruby
-require 'eval_in'
-
-result = EvalIn.call 'puts "hello, #{gets}"', stdin: 'world', language: "ruby/mri-2.1"
-
-result.exitstatus         # => 0
-result.language           # => "ruby/mri-2.1"
-result.language_friendly  # => "Ruby — MRI 2.1"
-result.code               # => "puts \"hello, \#{gets}\""
-result.output             # => "hello, world\n"
-result.status             # => "OK (0.052 sec real, 0.059 sec wall, 9 MB, 21 syscalls)"
-```
-
-Essentially a wrapper around:
-
-```sh
-curl https://eval.in/                        \
-     -i                                      \
-     -d utf8=√                               \
-     -d code='print "hello #{gets}"'         \
-     -d execute=on                           \
-     -d lang=ruby/mri-1.9.3                  \
-     -d input=world                          \
-| ruby -ane 'puts "#{$F[1]}.json" if /^Loc/' \
-| xargs curl
-```
 
 Attribution
 -----------
