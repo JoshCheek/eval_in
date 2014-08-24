@@ -24,8 +24,7 @@ module EvalIn
   end
 
   def self.post_code(code, options)
-    uri       = options.fetch(:url, "https://eval.in/")
-    uri       = URI(uri) unless uri.kind_of? URI
+    uri       = URI(options.fetch(:url, "https://eval.in/"))
     input     = options.fetch(:stdin, "")
     language  = options.fetch(:language)
     result    = Net::HTTP.post_form(uri, "utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input)

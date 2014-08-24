@@ -1,4 +1,6 @@
 require 'eval_in'
+require 'webmock'
+WebMock.disable_net_connect!
 
 RSpec.configure do |config|
   config.filter_run_excluding integration: true
@@ -60,3 +62,54 @@ RSpec.describe EvalIn::Result do
       output("Unexpected attributes! [:a, :b]\n").to_stderr
   end
 end
+
+
+RSpec.describe 'post_code' do
+  include WebMock::API
+
+  # ACTUAL RESPONSE:
+  #
+  # HTTP/1.1 302 Found\r
+  # Server: nginx/1.4.6 (Ubuntu)\r
+  # Date: Sun, 24 Aug 2014 05:57:17 GMT\r
+  # Content-Type: text/html;charset=utf-8\r
+  # Content-Length: 0\r
+  # Connection: keep-alive\r
+  # Location: https://eval.in/182584
+  # X-XSS-Protection: 1; mode=block\r
+  # X-Content-Type-Options: nosniff\r
+  # X-Frame-Options: SAMEORIGIN\r
+  # X-Runtime: 0.042154\r
+  # Strict-Transport-Security: max-age=31536000\r
+  # \r
+  def stub_eval_in(data=expected_data)
+    stub_request(:post, "https://eval.in/")
+      .with(:body => data)
+      .to_return(status: 302, headers: {'Location' => result_location})
+  end
+
+  let(:code)            { 'print "hello, #{gets}"' }
+  let(:stdin)           { "world" }
+  let(:language)        { "ruby/mri-1.9.3" }
+  let(:expected_data)   { {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => stdin} }
+  let(:result_location) { 'https://eval.in/182584' }
+
+  it 'posts the data to eval_in with utf8, execute on, and the code/language/input forwarded through' do
+    stub_eval_in expected_data
+    EvalIn.post_code code, stdin: stdin, language: language
+  end
+
+
+  it 'returns the redirect location jsonified' do
+    result = EvalIn.post_code code, stdin: stdin, language: language
+    expect(result).to eq "#{result_location}.json"
+  end
+
+  # something about when the language is invalid
+  # something about missing keys
+end
+
+get_response = <<RESPONSE
+{"lang":"ruby/mri-1.9.3","lang_friendly":"Ruby — MRI 1.9.3","code":"print \"hello \#{gets}\"","output":"hello world","status":"OK (0.020 sec real, 0.024 sec wall, 7 MB, 41 syscalls)"}
+RESPONSE
+
