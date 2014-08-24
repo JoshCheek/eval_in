@@ -206,9 +206,10 @@ RSpec.describe 'build_result' do
                   status:            status
   end
 
-  # exit:  https://eval.in/182586.json
-  # raise: https://eval.in/182587.json
-  # in C:  https://eval.in/182588.json
+  # exit:      https://eval.in/182586.json
+  # raise:     https://eval.in/182587.json
+  # in C:      https://eval.in/182588.json
+  # Forbidden: https://eval.in/182599.json
   it 'sets the exit status to that of the program when it is available' do
     result = EvalIn.build_result response_json.merge('status' => "Exited with error status 123")
     expect(result.exitstatus).to eq 123
@@ -222,5 +223,10 @@ RSpec.describe 'build_result' do
   it 'sets the exit status to 0 when the status does not imply a nonzero exit status' do
     result = EvalIn.build_result response_json.merge('status' => 'OK (0.012 sec real, 0.013 sec wall, 7 MB, 22 syscalls)')
     expect(result.exitstatus).to eq 0
+  end
+
+  it 'sets the exit status to 1 when there is an error' do
+    result = EvalIn.build_result response_json.merge('status' => 'Forbidden access to file `/usr/local/bin/gem')
+    expect(result.exitstatus).to eq 1
   end
 end

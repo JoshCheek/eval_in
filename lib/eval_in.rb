@@ -85,6 +85,7 @@ module EvalIn
     status     = response_json['status']
     exitstatus = if    !status                   then nil # let it choose default
                  elsif status =~ /status (\d+)$/ then $1.to_i
+                 elsif status =~ /^Forbidden/    then 1
                  else                                 0
                  end
 
