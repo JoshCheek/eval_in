@@ -83,7 +83,7 @@ RSpec.describe 'post_code' do
   # Strict-Transport-Security: max-age=31536000\r
   # \r
   def stub_eval_in(data=expected_data)
-    stub_request(:post, "https://eval.in/")
+    stub_request(:post, url)
       .with(:body => data)
       .to_return(status: 302, headers: {'Location' => result_location})
   end
@@ -93,6 +93,7 @@ RSpec.describe 'post_code' do
   let(:language)        { "ruby/mri-1.9.3" }
   let(:expected_data)   { {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => stdin} }
   let(:result_location) { 'https://eval.in/182584' }
+  let(:url)             { "https://eval.in/" }
 
   it 'posts the data to eval_in with utf8, execute on, and the code/language/input forwarded through' do
     stub_eval_in expected_data
@@ -102,6 +103,21 @@ RSpec.describe 'post_code' do
   it 'returns the redirect location jsonified' do
     result = EvalIn.post_code code, stdin: stdin, language: language
     expect(result).to eq "#{result_location}.json"
+  end
+
+  it 'sets input to empty string if not provided' do
+    stub_eval_in expected_data.merge('input' => '')
+    EvalIn.post_code code, language: language
+  end
+
+  it 'raises an ArgumentError error if not given a language' do
+    expect { EvalIn.post_code code, {} }.to raise_error KeyError, /language/
+  end
+
+  it 'can override the url' do
+    url.replace "http://example.com"
+    stub_eval_in
+    EvalIn.post_code code, url: 'http://example.com', stdin: stdin, language: language
   end
 
   context 'when it gets a non-redirect' do
@@ -117,8 +133,6 @@ RSpec.describe 'post_code' do
         raise_error EvalIn::RequestError, /406/
     end
   end
-
-  # something about missing keys
 end
 
 get_response = <<RESPONSE
