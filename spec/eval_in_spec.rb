@@ -160,6 +160,12 @@ RSpec.describe 'post_code' do
     EvalIn.post_code code, url: 'http://example.com', stdin: stdin, language: language
   end
 
+  it 'supports basic http auth' do
+    url.replace "http://user:pass@example.com"
+    stub_eval_in
+    EvalIn.post_code code, url: 'http://user:pass@example.com', stdin: stdin, language: language
+  end
+
   context 'when it gets a non-redirect' do
     it 'informs user of language provided and languages known if language is unknown' do
       stub_request(:post, "https://eval.in/").to_return(status: 406)

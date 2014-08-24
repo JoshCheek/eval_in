@@ -65,11 +65,11 @@ module EvalIn
     path     = uri.path
     path     = '/' if path.empty?
 
-    # stole this out of implementation for post_form https://github.com/ruby/ruby/blob/trunk/lib/net/http.rb#L503
+    # stole this out of implementation for post_form https://github.com/ruby/ruby/blob/2afed6eceff2951b949db7ded8167a75b431bad6/lib/net/http.rb#L503
     request = Net::HTTP::Post.new(path)
     request.form_data = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
     request['User-Agent'] = 'http://rubygems.org/gems/eval_in'
-    req.basic_auth uri.user, uri.password if uri.user
+    request.basic_auth uri.user, uri.password if uri.user
     net = Net::HTTP.new(uri.hostname, uri.port)
     # net.set_debug_output $stdout
     result = Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http|
