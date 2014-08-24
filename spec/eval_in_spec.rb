@@ -99,13 +99,25 @@ RSpec.describe 'post_code' do
     EvalIn.post_code code, stdin: stdin, language: language
   end
 
-
   it 'returns the redirect location jsonified' do
     result = EvalIn.post_code code, stdin: stdin, language: language
     expect(result).to eq "#{result_location}.json"
   end
 
-  # something about when the language is invalid
+  context 'when it gets a non-redirect' do
+    it 'informs user of language provided and languages known if language is unknown' do
+      stub_request(:post, "https://eval.in/").to_return(status: 406)
+      expect { EvalIn.post_code code, language: 'unknown-language' }.to \
+        raise_error EvalIn::RequestError, /unknown-language.*?ruby\/mri-2.1/m
+    end
+
+    it 'just bubbles the existing error up if it knows the language' do
+      stub_request(:post, "https://eval.in/").to_return(status: 406)
+      expect { EvalIn.post_code code, language: 'ruby/mri-2.1' }.to \
+        raise_error EvalIn::RequestError, /406/
+    end
+  end
+
   # something about missing keys
 end
 
