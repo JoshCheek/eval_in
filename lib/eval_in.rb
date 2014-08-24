@@ -60,16 +60,18 @@ module EvalIn
   end
 
   def self.post_code(code, options)
-    uri      = URI(options.fetch(:url, "https://eval.in/"))
-    input    = options.fetch(:stdin, "")
-    language = options.fetch(:language)
-    path     = uri.path
-    path     = '/' if path.empty?
+    uri        = URI(options.fetch(:url, "https://eval.in/"))
+    input      = options.fetch(:stdin, "")
+    language   = options.fetch(:language)
+    user_agent = 'http://rubygems.org/gems/eval_in'
+    user_agent << " (#{options[:context]})" if options[:context]
+    path       = uri.path
+    path       = '/' if path.empty?
 
     # stole this out of implementation for post_form https://github.com/ruby/ruby/blob/2afed6eceff2951b949db7ded8167a75b431bad6/lib/net/http.rb#L503
     request = Net::HTTP::Post.new(path)
     request.form_data = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
-    request['User-Agent'] = 'http://rubygems.org/gems/eval_in'
+    request['User-Agent'] = user_agent
     request.basic_auth uri.user, uri.password if uri.user
     net = Net::HTTP.new(uri.hostname, uri.port)
     # net.set_debug_output $stdout

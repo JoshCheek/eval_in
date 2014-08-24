@@ -28,7 +28,7 @@ RSpec.describe EvalIn, integration: true do
   end
 
   it 'evaluates Ruby code through eval.in' do
-    result = EvalIn.call 'print "hello, #{gets}"', stdin: "world", language: "ruby/mri-1.9.3"
+    result = EvalIn.call 'print "hello, #{gets}"', stdin: "world", language: "ruby/mri-1.9.3", context: 'eval_in integration test'
     expect(result.exitstatus       ).to eq 0
     expect(result.language         ).to eq "ruby/mri-1.9.3"
     expect(result.language_friendly).to eq "Ruby — MRI 1.9.3"
@@ -129,11 +129,18 @@ RSpec.describe 'post_code' do
     EvalIn.post_code code, stdin: stdin, language: language
   end
 
-  it 'sets the user agent to its gem homepage' do
+  it 'defaults the user agent to its gem homepage' do
     stub_request(:post, url)
       .with(headers: {'User-Agent' => 'http://rubygems.org/gems/eval_in'})
       .to_return(status: 302, headers: {'Location' => result_location})
     EvalIn.post_code code, language: language
+  end
+
+  it 'can add a context to the user agent' do
+    stub_request(:post, url)
+      .with(headers: {'User-Agent' => 'http://rubygems.org/gems/eval_in (some context)'})
+      .to_return(status: 302, headers: {'Location' => result_location})
+    EvalIn.post_code code, language: language, context: 'some context'
   end
 
   it 'returns the redirect location jsonified' do
