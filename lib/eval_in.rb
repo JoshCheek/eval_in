@@ -10,7 +10,8 @@ module EvalIn
   RequestError   = Class.new EvalInError
   ResultNotFound = Class.new EvalInError
 
-  # curl https://eval.in | ruby -rnokogiri -e 'puts Nokogiri::HTML($stdin.read).css("option").map { |o| o["value"] }'
+  # @example Generated with
+  #   curl https://eval.in | ruby -rnokogiri -e 'puts Nokogiri::HTML($stdin.read).css("option").map { |o| o["value"] }'
   KNOWN_LANGUAGES = %w[
     c/gcc-4.4.3
     c/gcc-4.9.1
@@ -39,6 +40,8 @@ module EvalIn
     assembly/nasm-2.07
   ]
 
+  # The data structure containing the final result
+  # its attributes default to null-objects for their given type
   class Result
     attr_accessor :exitstatus, :language, :language_friendly, :code, :output, :status, :url
 
@@ -55,6 +58,14 @@ module EvalIn
     end
   end
 
+  # The primary way to use this library.
+  #
+  # @param code [String] the code to evaluate.
+  # @option options [String] :language Mandatory, a language recognized by eval.in, such as any value in {KNOWN_LANGUAGES}.
+  # @option options [String] :url      Override the url to post the code to
+  # @option options [String] :stdin    Will be passed as standard input to the script
+  # @option options [String] :context  Will be included in the user agent
+  # @return [Result] the relevant data from the evaluated code.
   def self.call(code, options={})
     build_result get_code post_code(code, options)
   end
