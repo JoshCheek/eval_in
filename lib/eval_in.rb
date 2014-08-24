@@ -73,7 +73,7 @@ module EvalIn
   def self.post_code(code, options)
     uri        = URI(options.fetch(:url, "https://eval.in/"))
     input      = options.fetch(:stdin, "")
-    language   = options.fetch(:language)
+    language   = options.fetch(:language) { raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}" }
     user_agent = 'http://rubygems.org/gems/eval_in'
     user_agent << " (#{options[:context]})" if options[:context]
     path       = uri.path

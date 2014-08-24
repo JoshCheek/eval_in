@@ -162,7 +162,7 @@ RSpec.describe 'post_code' do
   end
 
   it 'raises an ArgumentError error if not given a language' do
-    expect { EvalIn.post_code code, {} }.to raise_error KeyError, /language/
+    expect { EvalIn.post_code code, {} }.to raise_error ArgumentError, /language/
   end
 
   it 'can override the url' do
