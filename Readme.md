@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/JoshCheek/seeing_eval_in.png?branch=master)](http://travis-ci.org/JoshCheek/eval_in)
+
 EvalIn
 ======
 
