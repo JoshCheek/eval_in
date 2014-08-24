@@ -160,6 +160,15 @@ Thanks to [Charlie Sommerville](https://twitter.com/charliesome) for making eval
 Thanks to Mon Oui, I partially stole the first version of the implementation from his gem [cinch-eval-in](http://rubygems.org/gems/cinch-eval-in)
 
 
+Contributing
+------------
+
+Fork it, make your changes, send me a pull request.
+Make sure your code is tested and all tests pass.
+
+Run tests with `bundle exec rspec`, run integration tests with `bundle exec rspec -t integration`.
+
+
 License
 -------
 
