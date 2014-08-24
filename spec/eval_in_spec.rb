@@ -129,6 +129,13 @@ RSpec.describe 'post_code' do
     expect(result).to eq "#{result_location}.json"
   end
 
+  it "Doesn't jsonify the redirect location if it already has a json suffix" do
+    result_location << '.json'
+    stub_eval_in expected_data
+    result = EvalIn.post_code code, stdin: stdin, language: language
+    expect(result).to eq result_location
+  end
+
   it 'sets input to empty string if not provided' do
     stub_eval_in expected_data.merge('input' => '')
     EvalIn.post_code code, language: language
