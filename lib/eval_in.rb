@@ -4,7 +4,9 @@ require 'net/http'
 require 'eval_in/version'
 
 module EvalIn
-  RequestError = Class.new StandardError
+  EvalInError    = Class.new StandardError
+  RequestError   = Class.new EvalInError
+  ResultNotFound = Class.new EvalInError
 
   KNOWN_LANGUAGES = %w[
     c/gcc-4.4.3
@@ -54,10 +56,10 @@ module EvalIn
   end
 
   def self.post_code(code, options)
-    uri       = URI(options.fetch(:url, "https://eval.in/"))
-    input     = options.fetch(:stdin, "")
-    language  = options.fetch(:language)
-    result    = Net::HTTP.post_form(uri, "utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input)
+    uri      = URI(options.fetch(:url, "https://eval.in/"))
+    input    = options.fetch(:stdin, "")
+    language = options.fetch(:language)
+    result   = Net::HTTP.post_form(uri, "utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input)
     if result.code == '302'
       location  = result['location']
       location += '.json' unless location.end_with? '.json'
@@ -71,8 +73,11 @@ module EvalIn
   end
 
   def self.get_code(location)
-    body   = Net::HTTP.get(URI location)
-    JSON.parse body
+    if body = Net::HTTP.get(URI location)
+      JSON.parse body
+    else
+      raise ResultNotFound, "No json at #{location.inspect}"
+    end
   end
 
   def self.build_result(response_json)

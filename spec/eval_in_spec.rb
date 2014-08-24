@@ -12,6 +12,10 @@ RSpec.configure do |config|
       end
     end
   }
+
+  config.after do
+    WebMock.reset!
+  end
 end
 
 RSpec.describe EvalIn, integration: true do
@@ -120,6 +124,7 @@ RSpec.describe 'post_code' do
   end
 
   it 'returns the redirect location jsonified' do
+    stub_eval_in expected_data
     result = EvalIn.post_code code, stdin: stdin, language: language
     expect(result).to eq "#{result_location}.json"
   end
@@ -159,17 +164,25 @@ end
 RSpec.describe 'get_code' do
   include WebMock::API
 
-  def stub_eval_in(url=url)
-    stub_request(:get, url).to_return(status: 200, body: json_result)
+  def stub_eval_in(options={})
+    stub_request(:get,   options.fetch(:url))
+      .to_return(status: options.fetch(:status, 200),
+                 body:   options.fetch(:json_result, json_result))
   end
 
   let(:ruby_result) { {'lang' => 'some lang', 'lang_friendly' => 'some lang friendly', 'code' => 'some code', 'output' => 'some output', 'status' => 'some status'} }
   let(:json_result) { JSON.dump ruby_result }
 
   it 'queries the location, and inflates the json' do
-    stub_eval_in("http://example.com/some-result.json")
+    stub_eval_in(url: "http://example.com/some-result.json")
     result = EvalIn.get_code "http://example.com/some-result.json"
     expect(result).to eq ruby_result
+  end
+
+  it 'raises an error when it gets a non-200' do
+    stub_eval_in json_result: '', url: 'http://whatever.com'
+    expect { EvalIn.get_code "http://whatever.com" }.to \
+      raise_error EvalIn::ResultNotFound, %r(http://whatever.com)
   end
 end
 
