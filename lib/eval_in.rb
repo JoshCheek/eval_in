@@ -58,8 +58,6 @@ module EvalIn
     end
   end
 
-  # The primary way to use this library.
-  #
   # @param code [String] the code to evaluate.
   # @option options [String] :language Mandatory, a language recognized by eval.in, such as any value in {KNOWN_LANGUAGES}.
   # @option options [String] :url      Override the url to post the code to
@@ -70,6 +68,7 @@ module EvalIn
     build_result fetch_result_json post_code(code, options)
   end
 
+  # @api private
   def self.post_code(code, options)
     uri        = URI(options.fetch(:url, "https://eval.in/"))
     input      = options.fetch(:stdin, "")
@@ -102,6 +101,7 @@ module EvalIn
     end
   end
 
+  # @api private
   def self.fetch_result_json(location)
     if body = Net::HTTP.get(URI location)
       JSON.parse(body).merge('url' => location)
@@ -110,6 +110,7 @@ module EvalIn
     end
   end
 
+  # @api private
   def self.build_result(response_json)
     status     = response_json['status']
     exitstatus = if    !status                   then nil # let it choose default
