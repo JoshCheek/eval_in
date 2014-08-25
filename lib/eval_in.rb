@@ -64,6 +64,10 @@ module EvalIn
   # @option options [String] :stdin    Will be passed as standard input to the script
   # @option options [String] :context  Will be included in the user agent
   # @return [Result] the relevant data from the evaluated code.
+  #
+  # @example
+  #   result = EvalIn.call 'puts "hello, #{gets}"', stdin: 'world', language: "ruby/mri-2.1"
+  #   result.output # => "hello, world\n"
   def self.call(code, options={})
     build_result fetch_result_json post_code(code, options)
   end
