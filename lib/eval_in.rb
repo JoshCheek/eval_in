@@ -67,7 +67,7 @@ module EvalIn
   # @option options [String] :context  Will be included in the user agent
   # @return [Result] the relevant data from the evaluated code.
   def self.call(code, options={})
-    build_result get_code post_code(code, options)
+    build_result fetch_result_json post_code(code, options)
   end
 
   def self.post_code(code, options)
@@ -102,7 +102,7 @@ module EvalIn
     end
   end
 
-  def self.get_code(location)
+  def self.fetch_result_json(location)
     if body = Net::HTTP.get(URI location)
       JSON.parse(body).merge('url' => location)
     else

@@ -194,7 +194,7 @@ end
 
 
 
-RSpec.describe 'get_code' do
+RSpec.describe 'fetch_result_json' do
   include WebMock::API
 
   def stub_eval_in(options={})
@@ -208,19 +208,19 @@ RSpec.describe 'get_code' do
 
   it 'queries the location, and inflates the json' do
     stub_eval_in(url: "http://example.com/some-result.json")
-    result = EvalIn.get_code "http://example.com/some-result.json"
+    result = EvalIn.fetch_result_json "http://example.com/some-result.json"
     expect(result).to match hash_including(ruby_result)
   end
 
   it 'raises an error when it gets a non-200' do
     stub_eval_in json_result: '', url: 'http://example.com'
-    expect { EvalIn.get_code "http://example.com" }.to \
+    expect { EvalIn.fetch_result_json "http://example.com" }.to \
       raise_error EvalIn::ResultNotFound, %r(http://example.com)
   end
 
   it 'adds the url to the result' do
     stub_eval_in url: 'http://example.com'
-    result = EvalIn.get_code 'http://example.com'
+    result = EvalIn.fetch_result_json 'http://example.com'
     expect(result['url']).to eq 'http://example.com'
   end
 end
