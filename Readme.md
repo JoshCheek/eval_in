@@ -169,10 +169,9 @@ Make sure your code is tested and all tests pass.
 Run tests with `bundle exec rspec`, run integration tests with `bundle exec rspec -t integration`.
 
 
-License
+<a href="http://www.wtfpl.net/"><img src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl.svg" height="20" alt="WTFPL" /></a> License
 -------
 
-<a href="http://www.wtfpl.net/"><img src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl.svg" height="20" alt="WTFPL" /></a>
 
     Copyright (C) 2014 Josh Cheek <josh.cheek@gmail.com>
 
