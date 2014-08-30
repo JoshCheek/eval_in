@@ -30,6 +30,17 @@ What languages can this run?
 
 <table>
   <tr>
+    <th align="left">Ruby</th>
+    </td>
+    <td>
+      ruby/mri-1.0<br />
+      ruby/mri-1.8.7<br />
+      ruby/mri-1.9.3<br />
+      ruby/mri-2.0.0<br />
+      ruby/mri-2.1<br />
+    </td>
+  </tr>
+  <tr>
     <th align="left">C</th>
     </td>
     <td>
@@ -123,17 +134,6 @@ What languages can this run?
     <td>
       python/cpython-2.7.8<br />
       python/cpython-3.4.1<br />
-    </td>
-  </tr>
-  <tr>
-    <th align="left">Ruby</th>
-    </td>
-    <td>
-      ruby/mri-1.0<br />
-      ruby/mri-1.8.7<br />
-      ruby/mri-1.9.3<br />
-      ruby/mri-2.0.0<br />
-      ruby/mri-2.1<br />
     </td>
   </tr>
   <tr>

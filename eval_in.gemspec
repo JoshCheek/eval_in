@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
 
   == Languages and Versions
 
+    Ruby          | MRI 1.0, MRI 1.8.7, MRI 1.9.3, MRI 2.0.0, MRI 2.1
     C             | GCC 4.4.3, GCC 4.9.1
     C++           | C++11 (GCC 4.9.1), GCC 4.4.3, GCC 4.9.1
     CoffeeScript  | CoffeeScript 1.7.1 (Node 0.10.29)
@@ -27,7 +28,6 @@ Gem::Specification.new do |s|
     Pascal        | Free Pascal 2.6.4
     Perl          | Perl 5.20.0
     Python        | CPython 2.7.8, CPython 3.4.1
-    Ruby          | MRI 1.0, MRI 1.8.7, MRI 1.9.3, MRI 2.0.0, MRI 2.1
     Slash         | Slash HEAD
     x86 Assembly  | NASM 2.07
 
