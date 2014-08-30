@@ -35,8 +35,8 @@ Gem::Specification.new do |s|
 
   It's this simple:
 
-    result = EvalIn.call 'puts "hello, world"', language: "ruby/mri-2.1"
-    result.output # "hello, world\\n"
+    result = EvalIn.call 'puts "example"', language: "ruby/mri-2.1"
+    result.output # returns "example\\n"
 
   DESCRIPTION
   s.license     = "WTFPL"
