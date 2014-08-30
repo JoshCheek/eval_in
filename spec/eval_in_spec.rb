@@ -282,3 +282,58 @@ RSpec.describe 'build_result' do
     expect(result.exitstatus).to eq 1
   end
 end
+
+
+RSpec.describe 'fetch_result' do
+  include WebMock::API
+
+  def stub_eval_in(url)
+    stub_request(:get,   url)
+      .to_return(status: 200, body: json_result)
+  end
+
+  let(:ruby_result) { {'lang' => 'some lang', 'lang_friendly' => 'some lang friendly', 'code' => 'some code', 'output' => 'some output', 'status' => 'some status'} }
+  let(:json_result) { JSON.dump ruby_result }
+
+  it 'wraps fetch_result_json and build_result' do
+    url = 'https://eval.in/1.json'
+    stub_eval_in url
+    result = EvalIn.fetch_result url
+    assert_result result,
+                  exitstatus:        0,
+                  language:          ruby_result['lang'],
+                  language_friendly: ruby_result['lang_friendly'],
+                  code:              ruby_result['code'],
+                  output:            ruby_result['output'],
+                  status:            ruby_result['status'],
+                  url:               url
+  end
+
+  it 'jsonifies the url if it isn\'t already' do
+    stub_eval_in 'https://eval.in/1.json'
+    expect(EvalIn.fetch_result('https://eval.in/1').url).to      eq 'https://eval.in/1.json'
+    expect(EvalIn.fetch_result('https://eval.in/1.json').url).to eq 'https://eval.in/1.json'
+  end
+end
+
+
+RSpec.describe 'jsonify_url' do
+  def assert_transforms(initial_url, expected_url)
+    actual_url = EvalIn.jsonify_url(initial_url)
+    expect(actual_url).to eq expected_url
+  end
+
+  it 'appends .json to a url that is missing it' do
+    assert_transforms 'http://eval.in/1',          'http://eval.in/1.json'
+    assert_transforms 'http://eval.in/1.json',     'http://eval.in/1.json'
+
+    assert_transforms 'http://eval.in/1?a=b',      'http://eval.in/1.json?a=b'
+    assert_transforms 'http://eval.in/1.json?a=b', 'http://eval.in/1.json?a=b'
+  end
+
+  it 'changes .not-json to .json' do
+    assert_transforms 'http://eval.in/1.xml',      'http://eval.in/1.json'
+    assert_transforms 'http://eval.in/1.html',     'http://eval.in/1.json'
+    assert_transforms 'http://eval.in/1.html?a=b', 'http://eval.in/1.json?a=b'
+  end
+end

@@ -78,7 +78,7 @@ module EvalIn
   #   result = EvalIn.fetch_result "https://eval.in/147.json"
   #   result.output # => "Hello Charlie! "
   def self.fetch_result(url)
-    build_result fetch_result_json url
+    build_result fetch_result_json jsonify_url url
   end
 
   # @api private
@@ -103,9 +103,7 @@ module EvalIn
     }
 
     if result.code == '302'
-      location  = result['location']
-      location += '.json' unless location.end_with? '.json'
-      location
+      jsonify_url result['location']
     elsif KNOWN_LANGUAGES.include? language
       raise RequestError, "There was an unexpected error, we got back a response code of #{result.code}"
     else
@@ -139,5 +137,12 @@ module EvalIn
                output:              response_json['output'],
                status:              response_json['status'],
                url:                 response_json['url']
+  end
+
+  # @api private
+  def self.jsonify_url(url)
+    uri = URI(url)
+    uri.path = Pathname.new(uri.path).sub_ext('.json').to_s
+    uri.to_s
   end
 end
