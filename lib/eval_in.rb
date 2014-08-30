@@ -69,7 +69,16 @@ module EvalIn
   #   result = EvalIn.call 'puts "hello, #{gets}"', stdin: 'world', language: "ruby/mri-2.1"
   #   result.output # => "hello, world\n"
   def self.call(code, options={})
-    build_result fetch_result_json post_code(code, options)
+    fetch_result post_code(code, options)
+  end
+
+  # @param url [String] the url with the result
+  #
+  # @example
+  #   result = EvalIn.fetch_result "https://eval.in/147.json"
+  #   result.output # => "Hello Charlie! "
+  def self.fetch_result(url)
+    build_result fetch_result_json url
   end
 
   # @api private
