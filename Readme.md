@@ -24,6 +24,7 @@ result.code               # => "puts \"hello, \#{gets}\""
 result.status             # => "OK (0.064 sec real, 0.073 sec wall, 9 MB, 21 syscalls)"
 ```
 
+Docs are [here](http://rdoc.info/gems/eval_in/frames/EvalIn).
 
 What languages can this run?
 ----------------------------
