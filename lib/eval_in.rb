@@ -126,11 +126,18 @@ module EvalIn
 
   # @api private
   def self.fetch_result_json(location)
-    if body = Net::HTTP.get(URI location)
-      JSON.parse(body).merge('url' => location)
-    else
-      raise ResultNotFound, "No json at #{location.inspect}"
-    end
+    # Can't just use Net::HTTP.get, b/c it doesn't use ssl on 1.9.3
+    # https://github.com/ruby/ruby/blob/v2_1_2/lib/net/http.rb#L478-479
+    # https://github.com/ruby/ruby/blob/v1_9_3_547/lib/net/http.rb#L454
+    uri = URI location
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http|
+      body = http.request_get(uri.request_uri).body
+      if body
+        JSON.parse(body).merge('url' => location)
+      else
+        raise ResultNotFound, "No json at #{location.inspect}"
+      end
+    }
   end
 
   # @api private

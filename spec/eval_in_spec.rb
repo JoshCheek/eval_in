@@ -310,7 +310,7 @@ RSpec.describe 'fetch_result' do
   include WebMock::API
 
   def stub_eval_in(url)
-    stub_request(:get,   url)
+    stub_request(:get, url)
       .to_return(status: 200, body: json_result)
   end
 
