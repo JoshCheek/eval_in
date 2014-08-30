@@ -107,6 +107,22 @@ RSpec.describe EvalIn::Result do
     expect { EvalIn::Result.new a: 1, b: 2 }.to \
       output("Unexpected attributes! [:a, :b]\n").to_stderr
   end
+
+  it 'has an as_json representation which dumps all its keys' do
+    result = EvalIn::Result.new(language:          'l',
+                                language_friendly: 'lf',
+                                code:              'c',
+                                output:            'o',
+                                status:            's',
+                                url:               'u')
+    expect(result.as_json).to eq 'exitstatus'        => -1,
+                                 'language'          => 'l',
+                                 'language_friendly' => 'lf',
+                                 'code'              => 'c',
+                                 'output'            => 'o',
+                                 'status'            => 's',
+                                 'url'               => 'u'
+  end
 end
 
 

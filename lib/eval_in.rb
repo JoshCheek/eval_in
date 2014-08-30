@@ -43,7 +43,11 @@ module EvalIn
   # The data structure containing the final result
   # its attributes default to null-objects for their given type
   class Result
-    attr_accessor :exitstatus, :language, :language_friendly, :code, :output, :status, :url
+    @attribute_names = [:exitstatus, :language, :language_friendly, :code, :output, :status, :url].freeze
+    attr_accessor *@attribute_names
+    class << self
+      attr_reader :attribute_names
+    end
 
     def initialize(attributes={})
       attributes = attributes.dup
@@ -56,6 +60,13 @@ module EvalIn
       self.url                = attributes.delete(:url)               || ""
       stderr                  = attributes.delete(:stderr)            || $stderr
       stderr.puts "Unexpected attributes! #{attributes.keys.inspect}" if attributes.any?
+    end
+
+    # Returns representation of the result built out of JSON primitives (hash, string, int)
+    def as_json
+      self.class.attribute_names.each_with_object Hash.new do |name, attributes|
+        attributes[name.to_s] = public_send name
+      end
     end
   end
 
