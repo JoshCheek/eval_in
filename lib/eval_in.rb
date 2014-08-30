@@ -54,7 +54,8 @@ module EvalIn
       self.output             = attributes.delete(:output)            || ""
       self.status             = attributes.delete(:status)            || ""
       self.url                = attributes.delete(:url)               || ""
-      $stderr.puts "Unexpected attributes! #{attributes.keys.inspect}" if attributes.any?
+      stderr                  = attributes.delete(:stderr)            || $stderr
+      stderr.puts "Unexpected attributes! #{attributes.keys.inspect}" if attributes.any?
     end
   end
 

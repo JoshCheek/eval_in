@@ -97,7 +97,13 @@ RSpec.describe EvalIn::Result do
     expect(attributes).to eq status: 'OK'
   end
 
-  it 'logs extra attributes to the error stream' do
+  it 'logs extra attributes to stderr input' do
+    fake_error_stream = StringIO.new
+    EvalIn::Result.new a: 1, b: 2, stderr: fake_error_stream
+    expect(fake_error_stream.string).to eq "Unexpected attributes! [:a, :b]\n"
+  end
+
+  it 'defaults the error stream to $stderr' do
     expect { EvalIn::Result.new a: 1, b: 2 }.to \
       output("Unexpected attributes! [:a, :b]\n").to_stderr
   end
