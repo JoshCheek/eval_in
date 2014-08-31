@@ -142,11 +142,11 @@ module EvalIn
 
   # @api private
   def self.build_result(response_json)
-    status     = response_json['status']
-    exitstatus = if    !status                   then nil # let it choose default
-                 elsif status =~ /status (\d+)$/ then $1.to_i
-                 elsif status =~ /^Forbidden/    then 1
-                 else                                 0
+    exitstatus = case response_json['status']
+                 when nil             then nil # let it choose default
+                 when /status (\d+)$/ then $1.to_i
+                 when /^Forbidden/    then 1
+                 else                      0
                  end
 
     Result.new exitstatus:          exitstatus,
