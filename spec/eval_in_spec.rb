@@ -27,8 +27,10 @@ RSpec.describe EvalIn, integration: true do
     WebMock.disable_net_connect!
   end
 
+  let(:context) { 'eval_in integration test' }
+
   it 'evaluates Ruby code through eval.in' do
-    result = EvalIn.call 'print "hello, #{gets}"', stdin: "world", language: "ruby/mri-2.1", context: 'eval_in integration test'
+    result = EvalIn.call 'print "hello, #{gets}"', stdin: "world", language: "ruby/mri-2.1", context: context
     expect(result.exitstatus       ).to eq 0
     expect(result.language         ).to eq "ruby/mri-2.1"
     expect(result.language_friendly).to eq "Ruby — MRI 2.1"
@@ -53,7 +55,8 @@ RSpec.describe EvalIn, integration: true do
     # iffy solution, but it's simple and works,
     # Rexml might get taken out of stdlib, so is more likely than this regex to fail in the future,
     # and I don't want to add dep on Nokogiri (w/ libxml & libxslt) where a small regex works adequately
-    current_known_languages = EvalIn.get_request('https://eval.in')
+    current_known_languages = EvalIn.get_request('https://eval.in', context)
+                                    .body
                                     .each_line
                                     .map { |line| line[/option.*?value="([^"]+)"/, 1] }
                                     .compact
@@ -320,8 +323,9 @@ end
 RSpec.describe 'fetch_result' do
   include WebMock::API
 
-  def stub_eval_in(url)
+  def stub_eval_in(url, options={})
     stub_request(:get, url)
+      .with(headers: {'User-Agent' => options.fetch(:user_agent, 'http://rubygems.org/gems/eval_in')})
       .to_return(status: 200, body: json_result)
   end
 
@@ -346,6 +350,11 @@ RSpec.describe 'fetch_result' do
     stub_eval_in 'https://eval.in/1.json'
     expect(EvalIn.fetch_result('https://eval.in/1').url).to      eq 'https://eval.in/1.json'
     expect(EvalIn.fetch_result('https://eval.in/1.json').url).to eq 'https://eval.in/1.json'
+  end
+
+  it 'can take a context for the user agent' do
+    stub_eval_in 'https://eval.in/1.json', user_agent: 'http://rubygems.org/gems/eval_in (c)'
+    expect(EvalIn.fetch_result('https://eval.in/1', context: 'c').url).to eq 'https://eval.in/1.json'
   end
 end
 

@@ -81,16 +81,19 @@ module EvalIn
   #   result = EvalIn.call 'puts "hello, #{gets}"', stdin: 'world', language: "ruby/mri-2.1"
   #   result.output # => "hello, world\n"
   def self.call(code, options={})
-    fetch_result post_code(code, options)
+    url = post_code(code, options)
+    fetch_result url, options
   end
 
   # @param url [String] the url with the result
+  # @option options [String] :context Will be included in the user agent
   #
   # @example
   #   result = EvalIn.fetch_result "https://eval.in/147.json"
   #   result.output # => "Hello Charlie! "
-  def self.fetch_result(raw_url)
-    build_result fetch_result_json jsonify_url raw_url
+  def self.fetch_result(raw_url, options={})
+    raw_json_url = jsonify_url(raw_url)
+    build_result fetch_result_json(raw_json_url, options)
   end
 
   # @api private
@@ -100,7 +103,7 @@ module EvalIn
     language   = options.fetch(:language) { raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}" }
     form_data  = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
 
-    result = post_request url, form_data: form_data, user_agent: user_agent_for(options[:context])
+    result = post_request url, form_data, user_agent_for(options[:context])
 
     if result.code == '302'
       jsonify_url result['location']
@@ -113,12 +116,10 @@ module EvalIn
   end
 
   # @api private
-  def self.fetch_result_json(raw_url)
-    if body = get_request(raw_url)
-      JSON.parse(body).merge('url' => raw_url)
-    else
-      raise ResultNotFound, "No json at #{raw_url.inspect}"
-    end
+  def self.fetch_result_json(raw_url, options={})
+    result = get_request raw_url, user_agent_for(options[:context])
+    return JSON.parse(result.body).merge('url' => raw_url) if result.body
+    raise ResultNotFound, "No json at #{raw_url.inspect}"
   end
 
   # @api private
@@ -150,23 +151,25 @@ module EvalIn
   # Can't just use Net::HTTP.get, b/c it doesn't use ssl on 1.9.3
   # https://github.com/ruby/ruby/blob/v2_1_2/lib/net/http.rb#L478-479
   # https://github.com/ruby/ruby/blob/v1_9_3_547/lib/net/http.rb#L454
-  def self.get_request(raw_url)
-    uri = URI raw_url
-    Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http|
-      http.request_get(uri.request_uri).body
-    }
+  def self.get_request(raw_url, user_agent)
+    uri                   = URI raw_url
+    path                  = uri.path
+    path                  = '/' if path.empty?
+    request               = Net::HTTP::Get.new(path)
+    request['User-Agent'] = user_agent
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http| http.request request }
   end
 
   # @private
   # stole this out of implementation for post_form https://github.com/ruby/ruby/blob/2afed6eceff2951b949db7ded8167a75b431bad6/lib/net/http.rb#L503
   # can use this to view the request: `net.set_debug_output $stdout` (pretty sure this obj is the http param in the block)
-  def self.post_request(raw_url, options)
+  def self.post_request(raw_url, form_data, user_agent)
     uri                   = URI raw_url
     path                  = uri.path
     path                  = '/' if path.empty?
     request               = Net::HTTP::Post.new(path)
-    request.form_data     = options.fetch(:form_data)
-    request['User-Agent'] = options.fetch(:user_agent)
+    request.form_data     = form_data
+    request['User-Agent'] = user_agent
     request.basic_auth uri.user, uri.password if uri.user
     Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http| http.request request }
   end
