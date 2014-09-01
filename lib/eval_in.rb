@@ -11,7 +11,7 @@ module EvalIn
   ResultNotFound = Class.new EvalInError
 
   # @example Generated with
-  #   curl https://eval.in | ruby -rnokogiri -e 'puts Nokogiri::HTML($stdin.read).css("option").map { |o| o["value"] }'
+  #   nokogiri https://eval.in -e 'puts $_.xpath("//option/@value")'
   KNOWN_LANGUAGES = %w[
     c/gcc-4.4.3
     c/gcc-4.9.1
