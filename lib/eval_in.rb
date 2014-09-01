@@ -98,11 +98,11 @@ module EvalIn
     url        = options.fetch(:url, "https://eval.in/")
     input      = options.fetch(:stdin, "")
     language   = options.fetch(:language) { raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}" }
+    form_data  = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
     user_agent = 'http://rubygems.org/gems/eval_in'
     user_agent << " (#{options[:context]})" if options[:context]
-    form_data  = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
 
-    result = post_request url, form_data: form_data, user_agent: user_agent
+    result = post_request url, user_agent: user_agent, form_data: form_data
 
     if result.code == '302'
       jsonify_url result['location']
