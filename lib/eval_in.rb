@@ -99,10 +99,8 @@ module EvalIn
     input      = options.fetch(:stdin, "")
     language   = options.fetch(:language) { raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}" }
     form_data  = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
-    user_agent = 'http://rubygems.org/gems/eval_in'
-    user_agent << " (#{options[:context]})" if options[:context]
 
-    result = post_request url, user_agent: user_agent, form_data: form_data
+    result = post_request url, form_data: form_data, user_agent: user_agent_for(options[:context])
 
     if result.code == '302'
       jsonify_url result['location']
@@ -171,5 +169,12 @@ module EvalIn
     request['User-Agent'] = options.fetch(:user_agent)
     request.basic_auth uri.user, uri.password if uri.user
     Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http| http.request request }
+  end
+
+  # @private
+  def self.user_agent_for(context)
+    'http://rubygems.org/gems/eval_in'.tap do |agent|
+      context && agent.concat(" (#{context})")
+    end
   end
 end
