@@ -48,6 +48,15 @@ RSpec.describe EvalIn, integration: true do
     expect(result.status           ).to match /OK \([\d.]+ sec real, [\d.]+ sec wall, \d MB, \d+ syscalls\)/
     expect(result.url              ).to match %r(https://eval.in/147.json)
   end
+
+  it 'is in sync with known languages' do
+    # iffy solution, but it's simple and works,
+    # Rexml might get taken out of stdlib, so is more likely than this regex to fail in the future,
+    # and I don't want to add dep on Nokogiri (w/ libxml & libxslt) where a small regex works adequately
+    body = Net::HTTP.start('eval.in', 443, use_ssl: true) { |http| http.request_get('/').body }
+    current_known_languages = body.each_line.map { |line| line[/option.*?value="([^"]+)"/, 1] }.compact
+    expect(EvalIn::KNOWN_LANGUAGES).to eq current_known_languages
+  end
 end
 
 RSpec.describe EvalIn::Result do
