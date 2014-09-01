@@ -89,8 +89,8 @@ module EvalIn
   # @example
   #   result = EvalIn.fetch_result "https://eval.in/147.json"
   #   result.output # => "Hello Charlie! "
-  def self.fetch_result(url)
-    build_result fetch_result_json jsonify_url url
+  def self.fetch_result(raw_url)
+    build_result fetch_result_json jsonify_url raw_url
   end
 
   # @api private
