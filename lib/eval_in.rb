@@ -95,24 +95,14 @@ module EvalIn
 
   # @api private
   def self.post_code(code, options)
-    uri        = URI(options.fetch(:url, "https://eval.in/"))
+    url        = options.fetch(:url, "https://eval.in/")
     input      = options.fetch(:stdin, "")
     language   = options.fetch(:language) { raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}" }
     user_agent = 'http://rubygems.org/gems/eval_in'
     user_agent << " (#{options[:context]})" if options[:context]
-    path       = uri.path
-    path       = '/' if path.empty?
+    form_data  = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
 
-    # stole this out of implementation for post_form https://github.com/ruby/ruby/blob/2afed6eceff2951b949db7ded8167a75b431bad6/lib/net/http.rb#L503
-    request = Net::HTTP::Post.new(path)
-    request.form_data = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
-    request['User-Agent'] = user_agent
-    request.basic_auth uri.user, uri.password if uri.user
-    net = Net::HTTP.new(uri.hostname, uri.port)
-    # net.set_debug_output $stdout
-    result = Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http|
-      http.request(request)
-    }
+    result = post_request url, form_data: form_data, user_agent: user_agent
 
     if result.code == '302'
       jsonify_url result['location']
@@ -167,5 +157,19 @@ module EvalIn
     Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http|
       http.request_get(uri.request_uri).body
     }
+  end
+
+  # @private
+  # stole this out of implementation for post_form https://github.com/ruby/ruby/blob/2afed6eceff2951b949db7ded8167a75b431bad6/lib/net/http.rb#L503
+  # can use this to view the request: `net.set_debug_output $stdout` (pretty sure this obj is the http param in the block)
+  def self.post_request(raw_url, options)
+    uri                   = URI raw_url
+    path                  = uri.path
+    path                  = '/' if path.empty?
+    request               = Net::HTTP::Post.new(path)
+    request.form_data     = options.fetch(:form_data)
+    request['User-Agent'] = options.fetch(:user_agent)
+    request.basic_auth uri.user, uri.password if uri.user
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http| http.request request }
   end
 end
