@@ -3,6 +3,7 @@
 require 'uri'
 require 'json'
 require 'net/http'
+require 'pathname'
 require 'eval_in/version'
 
 module EvalIn
