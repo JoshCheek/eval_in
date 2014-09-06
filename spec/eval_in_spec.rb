@@ -137,6 +137,23 @@ RSpec.describe EvalIn::Result do
                                  'status'            => 's',
                                  'url'               => 'u'
   end
+
+  it 'has a to_json that works correctly' do
+    result = EvalIn::Result.new(language:          'l',
+                                language_friendly: 'lf',
+                                code:              'c',
+                                output:            'o',
+                                status:            's',
+                                url:               'u')
+    after_json = JSON.parse(result.to_json)
+    expect(after_json).to eq 'exitstatus'        => -1,
+                             'language'          => 'l',
+                             'language_friendly' => 'lf',
+                             'code'              => 'c',
+                             'output'            => 'o',
+                             'status'            => 's',
+                             'url'               => 'u'
+  end
 end
 
 

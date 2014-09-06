@@ -69,6 +69,10 @@ module EvalIn
         attributes[name.to_s] = public_send name
       end
     end
+
+    def to_json
+      JSON.dump(as_json)
+    end
   end
 
   # @param code [String] the code to evaluate.
