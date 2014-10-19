@@ -35,13 +35,13 @@ RSpec.describe EvalIn::Mock do
         expect(result.output).to start_with 'RIGHT LANGUAGE'
       end
 
-      def result_from(code: 'dummy code', program_code: '# noop')
+      def result_from(language: 'dummy language', code: 'dummy code', program_code: '# noop')
         described_class.new(languages: {
-          'the-language' => {
+          language => {
             program: 'ruby',
             args:    ['-e', program_code]
           }
-        }).call(code, language: 'the-language')
+        }).call(code, language: language)
       end
 
       it 'records stderr and stdout' do
@@ -54,7 +54,12 @@ RSpec.describe EvalIn::Mock do
         expect(result_from(program_code: 'exit 99').exitstatus).to eq 99
       end
 
-      it 'sets the language and language_Friendly to the provided language'
+      it 'sets the language and language_friendly to the provided language' do
+        result = result_from language: 'the-lang'
+        expect(result.language).to eq 'the-lang'
+        expect(result.language_friendly).to eq 'the-lang'
+      end
+
       it 'sets the code to the provided code'
       it 'sets the url to my mock result at https://eval.in/207744.json'
       it 'blows up if asked for a language it doesn\'t know how to evaluate'
