@@ -15,10 +15,14 @@ RSpec.describe EvalIn::Mock do
     context 'when initialized with a mock result' do
       it 'returns the mock result' do
         result = Object.new
-        mock   = described_class.new(result: result)
+        mock   = described_class.new result: result
         expect(mock.call "code", language: '').to equal result
       end
-      it 'raises an ArgumentError if no language is provided'
+      it 'raises an ArgumentError if no language is provided' do
+        mock = described_class.new result: Object.new
+        expect { mock.call "code"               }.to     raise_error ArgumentError
+        expect { mock.call "code", language: '' }.to_not raise_error
+      end
     end
 
     context 'when a mock result is not provided' do
@@ -37,7 +41,11 @@ RSpec.describe EvalIn::Mock do
       it 'sets the code to the provided code'
       it 'sets the url to my mock result at https://eval.in/207744.json'
       it 'blows up if asked for a language it doesn\'t know how to evaluate'
-      it 'raises an ArgumentError if no language is provided'
+      it 'raises an ArgumentError if no language is provided' do
+        mock = described_class.new languages: {'l' => {program: 'echo', args: []}}
+        expect { mock.call "code"                }.to     raise_error ArgumentError
+        expect { mock.call "code", language: 'l' }.to_not raise_error
+      end
     end
   end
 

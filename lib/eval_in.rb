@@ -77,7 +77,7 @@ module EvalIn
     def post_code(code, options)
       url        = options.fetch(:url, "https://eval.in/")
       input      = options.fetch(:stdin, "")
-      language   = options.fetch(:language) { raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}" }
+      language   = language_or_error_from options
       form_data  = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
 
       result = post_request url, form_data, user_agent_for(options[:context])
@@ -161,6 +161,13 @@ module EvalIn
       request.form_data     = params[:form_data]  if params.key? :form_data
       request.basic_auth uri.user, uri.password   if uri.user
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http| http.request request }
+    end
+
+    # @api private
+    def language_or_error_from(options)
+      options.fetch :language do
+        raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}"
+      end
     end
   end
 end

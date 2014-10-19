@@ -9,11 +9,12 @@ module EvalIn
     end
 
     def call(code, options={})
+      language_name = EvalIn.__send__ :language_or_error_from, options
       return @result if @result
-      lang = @languages.fetch options.fetch(:language)
       tempfile = Tempfile.new 'EvalIn mock'
       tempfile.write code
       tempfile.close
+      lang    = @languages.fetch language_name
       program = lang.fetch(:program)
       args    = lang.fetch(:args, []) + [tempfile.path]
       out, exitstatus = Open3.capture2e(program, *args)
