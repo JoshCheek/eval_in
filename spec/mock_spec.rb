@@ -35,8 +35,25 @@ RSpec.describe EvalIn::Mock do
         expect(result.output).to start_with 'RIGHT LANGUAGE'
       end
 
-      it 'records stderr and stdout'
-      it 'records the exit status'
+      def result_from(code: 'dummy code', program_code: '# noop')
+        described_class.new(languages: {
+          'the-language' => {
+            program: 'ruby',
+            args:    ['-e', program_code]
+          }
+        }).call(code, language: 'the-language')
+      end
+
+      it 'records stderr and stdout' do
+        result = result_from program_code: '$stdout.print("STDOUT "); $stdout.flush; $stderr.print("STDERR")'
+        expect(result.output).to eq 'STDOUT STDERR'
+      end
+
+      it 'records the exit status' do
+        expect(result_from(program_code: 'exit 12').exitstatus).to eq 12
+        expect(result_from(program_code: 'exit 99').exitstatus).to eq 99
+      end
+
       it 'sets the language and language_Friendly to the provided language'
       it 'sets the code to the provided code'
       it 'sets the url to my mock result at https://eval.in/207744.json'

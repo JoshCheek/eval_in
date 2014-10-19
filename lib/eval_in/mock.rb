@@ -17,9 +17,9 @@ module EvalIn
       lang    = @languages.fetch language_name
       program = lang.fetch(:program)
       args    = lang.fetch(:args, []) + [tempfile.path]
-      out, exitstatus = Open3.capture2e(program, *args)
+      out, status = Open3.capture2e(program, *args)
       tempfile.unlink
-      Result.new output: out
+      Result.new output: out, exitstatus: status.exitstatus
     end
 
     def fetch_result(raw_url, options={})
