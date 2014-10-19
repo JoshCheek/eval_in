@@ -6,11 +6,13 @@ module EvalIn
     def initialize(options={})
       @result    = options.fetch :result,    nil
       @languages = options.fetch :languages, {}
+      @on_call   = options.fetch :on_call,   nil
     end
 
     def call(code, options={})
       language_name = EvalIn.__send__ :language_or_error_from, options
-      return @result if @result
+      return @result                      if @result
+      return @on_call.call(code, options) if @on_call
       tempfile = Tempfile.new 'EvalIn-mock'
       tempfile.write code
       tempfile.close

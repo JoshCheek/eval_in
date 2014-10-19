@@ -27,7 +27,24 @@ RSpec.describe EvalIn::Mock do
       end
     end
 
-    context 'when a mock result is not provided' do
+    context 'when initialized with an on_call proc' do
+      it 'passes the code and options to the proc and returns the result' do
+        mock = described_class.new on_call: -> code, options {
+          expect(code).to eq 'on_call code'
+          expect(options).to eq language: 'l'
+          123
+        }
+        expect(mock.call "on_call code", language: "l").to eq 123
+      end
+
+      it 'raises an ArgumentError if no language is provided' do
+        mock = described_class.new on_call: -> * {}
+        expect { mock.call "code"               }.to     raise_error ArgumentError
+        expect { mock.call "code", language: '' }.to_not raise_error
+      end
+    end
+
+    context 'when initialized without an on_call proc or result' do
       it 'executes the code with open3 against the list of language mappings' do
         mock = described_class.new(languages: {
           'correct-lang'   => {program: 'echo', args: ['RIGHT LANGUAGE']},
