@@ -102,7 +102,7 @@ module EvalIn
     # @api private
     def build_result(response_json)
       exitstatus = case response_json['status']
-                   when nil             then nil # let it choose default
+                   when nil             then nil # let Result choose default
                    when /status (\d+)$/ then $1.to_i
                    when /^Forbidden/    then 1
                    else                      0
@@ -127,7 +127,7 @@ module EvalIn
     # @api private
     def user_agent_for(context)
       'http://rubygems.org/gems/eval_in'.tap do |agent|
-        context && agent.concat(" (#{context})")
+        agent << " (#{context})" if context
       end
     end
 
