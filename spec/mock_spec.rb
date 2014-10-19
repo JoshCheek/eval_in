@@ -60,7 +60,10 @@ RSpec.describe EvalIn::Mock do
         expect(result.language_friendly).to eq 'the-lang'
       end
 
-      it 'sets the code to the provided code'
+      it 'sets the code to the provided code' do
+        expect(result_from(code: 'the-code').code).to eq 'the-code'
+      end
+
       it 'sets the url to my mock result at https://eval.in/207744.json'
       it 'blows up if asked for a language it doesn\'t know how to evaluate'
       it 'raises an ArgumentError if no language is provided' do

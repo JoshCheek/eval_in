@@ -22,7 +22,8 @@ module EvalIn
       Result.new output:            out,
                  exitstatus:        status.exitstatus,
                  language:          language_name,
-                 language_friendly: language_name
+                 language_friendly: language_name,
+                 code:              code
     end
 
     def fetch_result(raw_url, options={})
