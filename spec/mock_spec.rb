@@ -16,18 +16,28 @@ RSpec.describe EvalIn::Mock do
       it 'returns the mock result' do
         result = Object.new
         mock   = described_class.new(result: result)
-        expect(mock.call "code").to equal result
+        expect(mock.call "code", language: '').to equal result
       end
+      it 'raises an ArgumentError if no language is provided'
     end
 
     context 'when a mock result is not provided' do
-      it 'executes the code with open3 against the list of language mappings'
+      it 'executes the code with open3 against the list of language mappings' do
+        mock = described_class.new(languages: {
+          'correct-lang'   => {program: 'echo', args: ['RIGHT LANGUAGE']},
+          'incorrect-lang' => {program: 'echo', args: ['WRONG LANGUAGE']},
+        })
+        result = mock.call 'some code', language: 'correct-lang'
+        expect(result.output).to start_with 'RIGHT LANGUAGE'
+      end
+
       it 'records stderr and stdout'
       it 'records the exit status'
       it 'sets the language and language_Friendly to the provided language'
       it 'sets the code to the provided code'
       it 'sets the url to my mock result at https://eval.in/207744.json'
       it 'blows up if asked for a language it doesn\'t know how to evaluate'
+      it 'raises an ArgumentError if no language is provided'
     end
   end
 
@@ -42,6 +52,7 @@ RSpec.describe EvalIn::Mock do
 
     context 'when a mock result it not provided' do
       it 'fetches the requested result (delegates to the real implementation)'
+      it 'raises ResultNotFound if it can\'t fidn one there'
     end
   end
 end
