@@ -98,8 +98,28 @@ RSpec.describe EvalIn::Mock do
     end
 
     context 'when a mock result it not provided' do
-      it 'fetches the requested result (delegates to the real implementation)'
-      it 'raises ResultNotFound if it can\'t fidn one there'
+      include WebMock::API
+
+      it 'delegates to the real implementation' do
+        url         = "http://example.com/some-result.json"
+        result_hash = {'lang_friendly' => 'some lang friendly',
+                       'lang'          => 'some lang',
+                       'code'          => 'some code',
+                       'output'        => 'some output',
+                       'status'        => 'some status'}
+        stub_request(:get, url)
+          .with(headers: {'User-Agent' => 'http://rubygems.org/gems/eval_in (context)'})
+          .to_return(status: 200, body: JSON.dump(result_hash))
+        result = described_class.new.fetch_result("http://example.com/some-result.json", context: 'context')
+        assert_result result,
+                      exitstatus:        0,
+                      language:          result_hash['lang'],
+                      language_friendly: result_hash['lang_friendly'],
+                      code:              result_hash['code'],
+                      output:            result_hash['output'],
+                      status:            result_hash['status'],
+                      url:               url
+      end
     end
   end
 end

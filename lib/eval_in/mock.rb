@@ -18,7 +18,6 @@ module EvalIn
       program = lang.fetch(:program)
       args    = lang.fetch(:args, []) + [tempfile.path]
       out, status = Open3.capture2e(program, *args)
-      tempfile.unlink
       Result.new output:            out,
                  exitstatus:        status.exitstatus,
                  language:          language_name,
@@ -26,10 +25,13 @@ module EvalIn
                  code:              code,
                  url:               'https://eval.in/207744.json',
                  status:            'OK (0.072 sec real, 0.085 sec wall, 8 MB, 19 syscalls)'
+    ensure
+      tempfile.unlink if tempfile
     end
 
     def fetch_result(raw_url, options={})
-      @result
+      return @result if @result
+      EvalIn.__send__ :fetch_result, raw_url, options
     end
   end
 end
