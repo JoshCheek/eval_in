@@ -119,7 +119,7 @@ module EvalIn
     uri.to_s
   end
 
-  # @private
+  # @api private
   def self.user_agent_for(context)
     'http://rubygems.org/gems/eval_in'.tap do |agent|
       context && agent.concat(" (#{context})")
@@ -136,7 +136,7 @@ module EvalIn
                         user_agent:   user_agent
   end
 
-  # @private
+  # @api private
   def self.post_request(raw_url, form_data, user_agent)
     generic_request_for raw_url:      raw_url,
                         request_type: Net::HTTP::Post,
@@ -144,7 +144,7 @@ module EvalIn
                         form_data:    form_data
   end
 
-  # @private
+  # @api private
   # stole this out of implementation for post_form https://github.com/ruby/ruby/blob/2afed6eceff2951b949db7ded8167a75b431bad6/lib/net/http.rb#L503
   # can use this to view the request: http.set_debug_output $stdout
   def self.generic_request_for(params)
