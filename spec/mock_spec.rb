@@ -44,7 +44,7 @@ RSpec.describe EvalIn::Mock do
       end
     end
 
-    context 'when initialized without an on_call proc or result' do
+    context 'when initialized without a a result or on_call proc' do
       it 'executes the code with open3 against the list of language mappings' do
         mock = described_class.new(languages: {
           'correct-lang'   => {program: 'echo', args: ['RIGHT LANGUAGE']},
@@ -114,7 +114,18 @@ RSpec.describe EvalIn::Mock do
       end
     end
 
-    context 'when a mock result it not provided' do
+    context 'when initialized with an on_fetch_result proc' do
+      it 'passes the url and options to the proc and returns the result' do
+        mock = described_class.new on_fetch_result: -> url, options {
+          expect(url).to eq 'some url'
+          expect(options).to eq a: 'b'
+          123
+        }
+        expect(mock.fetch_result 'some url', a: 'b').to eq 123
+      end
+    end
+
+    context 'when initialized without a result or on_fetch_result proc' do
       include WebMock::API
 
       it 'delegates to the real implementation' do

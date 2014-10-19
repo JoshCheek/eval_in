@@ -4,9 +4,10 @@ require 'tempfile'
 module EvalIn
   class Mock
     def initialize(options={})
-      @result    = options.fetch :result,    nil
-      @languages = options.fetch :languages, {}
-      @on_call   = options.fetch :on_call,   nil
+      @result          = options.fetch :result,          nil
+      @languages       = options.fetch :languages,       {}
+      @on_call         = options.fetch :on_call,         nil
+      @on_fetch_result = options.fetch :on_fetch_result, nil
     end
 
     def call(code, options={})
@@ -32,7 +33,8 @@ module EvalIn
     end
 
     def fetch_result(raw_url, options={})
-      return @result if @result
+      return @result                                 if @result
+      return @on_fetch_result.call(raw_url, options) if @on_fetch_result
       EvalIn.__send__ :fetch_result, raw_url, options
     end
   end
