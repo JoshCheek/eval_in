@@ -24,7 +24,8 @@ module EvalIn
                  language:          language_name,
                  language_friendly: language_name,
                  code:              code,
-                 url:               'https://eval.in/207744.json'
+                 url:               'https://eval.in/207744.json',
+                 status:            'OK (0.072 sec real, 0.085 sec wall, 8 MB, 19 syscalls)'
     end
 
     def fetch_result(raw_url, options={})

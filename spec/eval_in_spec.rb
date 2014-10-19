@@ -19,7 +19,7 @@ RSpec.describe EvalIn do
       expect(result.language_friendly).to eq "Ruby — MRI 2.1"
       expect(result.code             ).to eq 'print "hello, #{gets}"'
       expect(result.output           ).to eq "hello, world"
-      expect(result.status           ).to match /OK \([\d.]+ sec real, [\d.]+ sec wall, \d MB, \d+ syscalls\)/
+      expect(result.status           ).to match success_status_regex
       expect(result.url              ).to match %r(https://eval.in/\d+.json)
     end
 
@@ -30,7 +30,7 @@ RSpec.describe EvalIn do
       expect(result.language_friendly).to eq "Ruby — MRI 1.9.3"
       expect(result.code             ).to eq %'class Greeter\r\n  def initialize(name)\r\n    @name = name\r\n  end\r\n\r\n  def greet\r\n    puts \"Hello \#{@name}!\"\r\n  end\r\nend\r\n\r\ngreeter = Greeter.new \"Charlie\"\r\ngreeter.greet'
       expect(result.output           ).to eq "Hello Charlie!\n"
-      expect(result.status           ).to match /OK \([\d.]+ sec real, [\d.]+ sec wall, \d MB, \d+ syscalls\)/
+      expect(result.status           ).to match success_status_regex
       expect(result.url              ).to match %r(https://eval.in/147.json)
     end
 

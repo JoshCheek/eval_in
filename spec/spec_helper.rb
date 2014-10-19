@@ -11,6 +11,10 @@ RSpec.configure do |config|
         expect(result.public_send key).to eq value
       end
     end
+
+    def success_status_regex
+      /OK \([\d.]+ sec real, [\d.]+ sec wall, \d MB, \d+ syscalls\)/
+    end
   }
 
   config.after do

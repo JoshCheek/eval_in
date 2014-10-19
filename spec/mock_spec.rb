@@ -1,6 +1,8 @@
 require 'spec_helper'
 require 'eval_in/mock'
 
+
+# TODO: look at other reasons the thing could blow up, do we need to provide the mock a way to do these things?
 RSpec.describe EvalIn::Mock do
   specify 'instances provide the same methods with the same signatures as the EvalIn class' do
     mock = described_class.new
@@ -68,7 +70,16 @@ RSpec.describe EvalIn::Mock do
         expect(result_from().url).to eq 'https://eval.in/207744.json'
       end
 
-      it 'blows up if asked for a language it doesn\'t know how to evaluate'
+      it 'sets the status to something looking like a real status' do
+        # in this case, just the status from https://eval.in/207744.json
+        expect(result_from().status).to match success_status_regex
+      end
+
+      it 'blows up if asked for a language it doesn\'t know how to evaluate' do
+        expect { described_class.new.call '', language: 'no-such-lang' }
+          .to raise_error KeyError, /no-such-lang/
+      end
+
       it 'raises an ArgumentError if no language is provided' do
         mock = described_class.new languages: {'l' => {program: 'echo', args: []}}
         expect { mock.call "code"                }.to     raise_error ArgumentError
