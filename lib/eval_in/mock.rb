@@ -23,7 +23,8 @@ module EvalIn
                  exitstatus:        status.exitstatus,
                  language:          language_name,
                  language_friendly: language_name,
-                 code:              code
+                 code:              code,
+                 url:               'https://eval.in/207744.json'
     end
 
     def fetch_result(raw_url, options={})

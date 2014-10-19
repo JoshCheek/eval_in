@@ -64,7 +64,10 @@ RSpec.describe EvalIn::Mock do
         expect(result_from(code: 'the-code').code).to eq 'the-code'
       end
 
-      it 'sets the url to my mock result at https://eval.in/207744.json'
+      it 'sets the url to my mock result at https://eval.in/207744.json' do
+        expect(result_from().url).to eq 'https://eval.in/207744.json'
+      end
+
       it 'blows up if asked for a language it doesn\'t know how to evaluate'
       it 'raises an ArgumentError if no language is provided' do
         mock = described_class.new languages: {'l' => {program: 'echo', args: []}}
