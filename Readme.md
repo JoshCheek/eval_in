@@ -153,6 +153,132 @@ What languages can this run?
   </tr>
 </table>
 
+
+Mocking for non-prod environments
+---------------------------------
+
+### Wiring the mock in
+
+The mock that is provided will need to be set into place.
+If the code is directly doing `EvalIn.call(...)`, then it is
+a hard dependency, and there is no ablity to set the mock into place.
+
+You will need to structure your code such that it receives the `eval_in`
+service as an argument, or looks it up in some configuration or something
+(I strongly prefer the former).
+This will allow your test environment to give it a mock that tests that it
+works in all the edge cases, or is just generally benign (doesn't make real http request in tests),
+your dev environment to give it an `EvalIn` that looks so close to the real one you wouldn't even know,
+and your prod environment to give it the actual `EvalIn` that actually uses the service.
+
+If this is still unclear, here is an example:
+
+```ruby
+# == before: hard dependency prevents you from giving a mock ==
+def get_output(code)
+  EvalIn.call(code, language: 'ruby/mri-2.1').output
+end
+
+# == after: receive the thing you're talking to ==
+def get_output(eval_in, code)
+  eval_in.call(code, language: 'ruby/mri-2.1').output
+end
+
+# in test, you call like this
+output = 'the output'
+assert_equal output, get_output(EvalIn::Mock.new(result: EvalIn::Result.new(output: output)), 'some code')
+
+# in prod you call like this:
+get_output(EvalIn, params[:code_sample])
+
+# in dev you call like this:
+get_output(EvalIn::Mock.new(languages: {'ruby/mri-2.1' => {program: 'ruby', args: []}}),
+           params[:code_sample])
+
+# Now those last_two are probably in the same controller, right?
+# How do you get it to do the right thing in the right env, then?
+# well, you pass it to your controller, the same way you passed the `get_output`
+# for example, you might do this in a rack middleware,
+# then have it get the service from the `env` hash
+# or set it in an environment initializer
+```
+
+### The provided mock
+
+For a test or dev env where you don't care about correctness,
+just that it does something that looks real,
+you can make a mock that has a `Result`,
+instantiated with any values you care about.
+
+```ruby
+require 'eval_in/mock'
+eval_in = EvalIn::Mock.new(result: EvalIn::Result.new(code: 'injected code', output: 'the output')) 
+
+eval_in.call('overridden code', language: 'irrelevant')
+# => #<EvalIn::Result:0x007fb503a7a5e8
+#     @code="injected code",
+#     @exitstatus=-1,
+#     @language="",
+#     @language_friendly="",
+#     @output="the output",
+#     @status="",
+#     @url="">
+```
+
+If you want your environment to behave approximately like the real `eval_in`,
+you can instantiate a mock that knows how to evaluate code locally.
+This is necessary, because it doesn't know how to execute these languages
+(eval.in does that, it just knows how to talk to eval.in).
+So you must provide it with a list of languages and how to execute them
+
+This is probably idea for a dev environment, the results will be the most realistic.
+
+```ruby
+require 'eval_in/mock'
+
+# a mock that can execute Ruby code and C code
+eval_in = EvalIn::Mock.new(languages: {
+  'ruby/mri-2.1' => {program: 'ruby', args: []},
+  'c/gcc-4.9.1'  => {program: 'ruby', args: ['-e',
+                                             'system "gcc -x c -o /tmp/eval_in_c_example #{ARGV.first}"
+                                              exec   "/tmp/eval_in_c_example"']},
+})
+
+eval_in.call 'puts "hello from ruby!"; exit 123', language: 'ruby/mri-2.1'
+# => #<EvalIn::Result:0x007fb503a7d518
+#     @code="puts \"hello from ruby!\"; exit 123",
+#     @exitstatus=123,
+#     @language="ruby/mri-2.1",
+#     @language_friendly="ruby/mri-2.1",
+#     @output="hello from ruby!\n",
+#     @status="OK (0.072 sec real, 0.085 sec wall, 8 MB, 19 syscalls)",
+#     @url="https://eval.in/207744.json">
+
+eval_in.call '#include <stdio.h>
+int main() {
+  puts("hello from c!");
+}', language: 'c/gcc-4.9.1'
+# => #<EvalIn::Result:0x007fb503a850b0
+#     @code="#include <stdio.h>\nint main() {\n  puts(\"hello from c!\");\n}",
+#     @exitstatus=0,
+#     @language="c/gcc-4.9.1",
+#     @language_friendly="c/gcc-4.9.1",
+#     @output="hello from c!\n",
+#     @status="OK (0.072 sec real, 0.085 sec wall, 8 MB, 19 syscalls)",
+#     @url="https://eval.in/207744.json">
+```
+
+You can also provide a callback that will be invoked to handle the request.
+This is probably ideal for testing more nuanced edge cases that the mock
+doesn't inherently provide the ability to do.
+
+```ruby
+require 'eval_in/mock'
+eval_in = EvalIn::Mock.new on_call: -> code, options { raise EvalIn::RequestError, 'does my code do the right thing in the event of an exception?' }
+
+eval_in.call('code', language: 'any') rescue $! # => #<EvalIn::RequestError: does my code do the right thing in the event of an exception?>
+```
+
 Attribution
 -----------
 
