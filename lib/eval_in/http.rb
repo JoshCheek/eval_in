@@ -1,10 +1,11 @@
 module EvalIn
+
+  # Can't just use Net::HTTP.get, b/c it doesn't use ssl on 1.9.3
+  # https://github.com/ruby/ruby/blob/v2_1_2/lib/net/http.rb#L478-479
+  # https://github.com/ruby/ruby/blob/v1_9_3_547/lib/net/http.rb#L454
   module HTTP
     extend self
 
-    # Can't just use Net::HTTP.get, b/c it doesn't use ssl on 1.9.3
-    # https://github.com/ruby/ruby/blob/v2_1_2/lib/net/http.rb#L478-479
-    # https://github.com/ruby/ruby/blob/v1_9_3_547/lib/net/http.rb#L454
     def get_request(raw_url, user_agent)
       generic_request_for raw_url:      raw_url,
                           request_type: Net::HTTP::Get,
