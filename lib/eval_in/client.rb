@@ -1,4 +1,7 @@
 require 'json'
+require 'eval_in/http'
+require 'eval_in/result'
+require 'eval_in/constants'
 
 module EvalIn
 

@@ -1,5 +1,7 @@
 require 'open3'
 require 'tempfile'
+require 'eval_in/client'
+require 'eval_in/result'
 
 module EvalIn
   class Mock
