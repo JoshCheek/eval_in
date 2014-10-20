@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'json'
 require 'eval_in/http'
 require 'eval_in/result'
