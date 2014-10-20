@@ -1,3 +1,5 @@
+require 'json'
+
 module EvalIn
   # The data structure containing the final result
   # its attributes default to null-objects for their given type

@@ -73,7 +73,7 @@ RSpec.describe EvalIn do
     end
 
     def post_code(code, options)
-      EvalIn.__send__ :post_code, code, options
+      EvalIn::Client.post_code code, options
     end
 
     let(:code)            { 'print "hello, #{gets}"' }
@@ -162,7 +162,7 @@ RSpec.describe EvalIn do
     end
 
     def fetch_result_json(url)
-      EvalIn.__send__ :fetch_result_json, url
+      EvalIn::Client.fetch_result_json url
     end
 
     let(:ruby_result) { {'lang' => 'some lang', 'lang_friendly' => 'some lang friendly', 'code' => 'some code', 'output' => 'some output', 'status' => 'some status'} }
@@ -190,7 +190,7 @@ RSpec.describe EvalIn do
 
   describe '.build_result' do
     def build_result(response_json)
-      result = EvalIn.__send__ :build_result, response_json
+      result = EvalIn::Client.build_result response_json
     end
 
     let(:language)          { 'some lang'          }

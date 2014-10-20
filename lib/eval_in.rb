@@ -1,11 +1,7 @@
 # encoding: utf-8
 
-require 'uri'
-require 'json'
-require 'net/http'
-require 'pathname'
 require 'eval_in/http'
-require 'eval_in/result'
+require 'eval_in/client'
 require 'eval_in/version'
 
 module EvalIn
@@ -54,7 +50,7 @@ module EvalIn
   #   result = EvalIn.call 'puts "hello, #{gets}"', stdin: 'world', language: "ruby/mri-2.1"
   #   result.output # => "hello, world\n"
   def self.call(code, options={})
-    url = post_code(code, options)
+    url = Client.post_code(code, options)
     fetch_result url, options
   end
 
@@ -66,70 +62,6 @@ module EvalIn
   #   result.output # => "Hello Charlie! "
   def self.fetch_result(raw_url, options={})
     raw_json_url = HTTP.jsonify_url(raw_url)
-    build_result fetch_result_json(raw_json_url, options)
-  end
-
-  # all remaining methods are private class methods
-
-  class << self
-    private
-
-    # @api private
-    def post_code(code, options)
-      url        = options.fetch(:url, "https://eval.in/")
-      input      = options.fetch(:stdin, "")
-      language   = language_or_error_from options
-      form_data  = {"utf8" => "√", "code" => code, "execute" => "on", "lang" => language, "input" => input}
-
-      result = HTTP.post_request url, form_data, user_agent_for(options[:context])
-
-      if result.code == '302'
-        HTTP.jsonify_url result['location']
-      elsif KNOWN_LANGUAGES.include? language
-        raise RequestError, "There was an unexpected error, we got back a response code of #{result.code}"
-      else
-        raise RequestError, "Perhaps language is wrong, you provided: #{language.inspect}\n"\
-                            "Known languages are: #{KNOWN_LANGUAGES.inspect}"
-      end
-    end
-
-    # @api private
-    def fetch_result_json(raw_url, options={})
-      result = HTTP.get_request raw_url, user_agent_for(options[:context])
-      return JSON.parse(result.body).merge('url' => raw_url) if result.body
-      raise ResultNotFound, "No json at #{raw_url.inspect}"
-    end
-
-    # @api private
-    def build_result(response_json)
-      exitstatus = case response_json['status']
-                   when nil             then nil # let Result choose default
-                   when /status (\d+)$/ then $1.to_i
-                   when /^Forbidden/    then 1
-                   else                      0
-                   end
-
-      Result.new exitstatus:          exitstatus,
-                 language:            response_json['lang'],
-                 language_friendly:   response_json['lang_friendly'],
-                 code:                response_json['code'],
-                 output:              response_json['output'],
-                 status:              response_json['status'],
-                 url:                 response_json['url']
-    end
-
-    # @api private
-    def user_agent_for(context)
-      'http://rubygems.org/gems/eval_in'.tap do |agent|
-        agent << " (#{context})" if context
-      end
-    end
-
-    # @api private
-    def language_or_error_from(options)
-      options.fetch :language do
-        raise ArgumentError, ":language is mandatory, but options only has #{options.keys.inspect}"
-      end
-    end
+    Client.build_result Client.fetch_result_json(raw_json_url, options)
   end
 end

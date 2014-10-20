@@ -1,16 +1,15 @@
+require 'uri'
+require 'net/http'
+require 'pathname'
+
 module EvalIn
 
-  # Can't just use Net::HTTP.get, b/c it doesn't use ssl on 1.9.3
+  # This module contains generic wrappers over net/http
+  # We can't just use Net::HTTP.get, b/c it doesn't use ssl on 1.9.3
   # https://github.com/ruby/ruby/blob/v2_1_2/lib/net/http.rb#L478-479
   # https://github.com/ruby/ruby/blob/v1_9_3_547/lib/net/http.rb#L454
   module HTTP
     extend self
-
-    def jsonify_url(url)
-      uri = URI(url)
-      uri.path = Pathname.new(uri.path).sub_ext('.json').to_s
-      uri.to_s
-    end
 
     def get_request(raw_url, user_agent)
       generic_request_for raw_url:      raw_url,
@@ -36,6 +35,12 @@ module EvalIn
       request.form_data     = params[:form_data]  if params.key? :form_data
       request.basic_auth uri.user, uri.password   if uri.user
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: (uri.scheme == 'https')) { |http| http.request request }
+    end
+
+    def jsonify_url(url)
+      uri = URI(url)
+      uri.path = Pathname.new(uri.path).sub_ext('.json').to_s
+      uri.to_s
     end
   end
 end

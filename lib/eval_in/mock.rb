@@ -11,7 +11,7 @@ module EvalIn
     end
 
     def call(code, options={})
-      language_name = EvalIn.__send__ :language_or_error_from, options
+      language_name = EvalIn::Client.language_or_error_from options
       return @result if @result
       @on_call.call(code, options)
     end
@@ -24,7 +24,7 @@ module EvalIn
     private
 
     def evaluate_with_tempfile(code, options={})
-      language_name = EvalIn.__send__ :language_or_error_from, options
+      language_name = EvalIn::Client.language_or_error_from options
       tempfile      = Tempfile.new 'EvalIn-mock'
       tempfile.write code
       tempfile.close
