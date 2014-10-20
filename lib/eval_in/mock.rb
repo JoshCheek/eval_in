@@ -8,19 +8,17 @@ module EvalIn
   class Mock
     def initialize(options={})
       @result          = options.fetch :result,          nil
-      @languages       = options.fetch :languages,       {}
-      @on_call         = options.fetch(:on_call)         { method :evaluate_with_tempfile }
-      @on_fetch_result = options.fetch(:on_fetch_result) { EvalIn.method :fetch_result }
+      @languages       = options.fetch :languages,       Hash.new
+      @on_call         = options.fetch(:on_call)         { lambda { |*args| @result || evaluate_with_tempfile(*args) } }
+      @on_fetch_result = options.fetch(:on_fetch_result) { lambda { |*args| @result || EvalIn.fetch_result(*args)    } }
     end
 
     def call(code, options={})
       language_name = EvalIn::Client.language_or_error_from options
-      return @result if @result
       @on_call.call(code, options)
     end
 
     def fetch_result(raw_url, options={})
-      return @result if @result
       @on_fetch_result.call(raw_url, options)
     end
 
