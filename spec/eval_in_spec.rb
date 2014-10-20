@@ -38,11 +38,11 @@ RSpec.describe EvalIn do
       # iffy solution, but it's simple and works,
       # Rexml might get taken out of stdlib, so is more likely than this regex to fail in the future,
       # and I don't want to add dep on Nokogiri (w/ libxml & libxslt) where a small regex works adequately
-      current_known_languages = EvalIn.__send__(:get_request, 'https://eval.in', context)
-                                      .body
-                                      .each_line
-                                      .map { |line| line[/option.*?value="([^"]+)"/, 1] }
-                                      .compact
+      current_known_languages = EvalIn::HTTP.get_request('https://eval.in', context)
+                                            .body
+                                            .each_line
+                                            .map { |line| line[/option.*?value="([^"]+)"/, 1] }
+                                            .compact
       expect(EvalIn::KNOWN_LANGUAGES).to eq current_known_languages
     end
   end
