@@ -24,6 +24,7 @@ module EvalIn
     end
 
     # Returns representation of the result built out of JSON primitives (hash, string, int)
+    # This is useful for composing JSON structures and only rendering the JSON string at the end
     def as_json
       self.class.attribute_names.each_with_object Hash.new do |name, attributes|
         attributes[name.to_s] = public_send name

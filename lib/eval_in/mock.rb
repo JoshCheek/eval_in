@@ -1,5 +1,6 @@
 require 'open3'
 require 'tempfile'
+require 'eval_in'
 require 'eval_in/client'
 require 'eval_in/result'
 
