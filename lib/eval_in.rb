@@ -65,7 +65,7 @@ module EvalIn
   #   result = EvalIn.fetch_result "https://eval.in/147.json"
   #   result.output # => "Hello Charlie! "
   def self.fetch_result(raw_url, options={})
-    raw_json_url = jsonify_url(raw_url)
+    raw_json_url = HTTP.jsonify_url(raw_url)
     build_result fetch_result_json(raw_json_url, options)
   end
 
@@ -84,7 +84,7 @@ module EvalIn
       result = HTTP.post_request url, form_data, user_agent_for(options[:context])
 
       if result.code == '302'
-        jsonify_url result['location']
+        HTTP.jsonify_url result['location']
       elsif KNOWN_LANGUAGES.include? language
         raise RequestError, "There was an unexpected error, we got back a response code of #{result.code}"
       else
@@ -116,13 +116,6 @@ module EvalIn
                  output:              response_json['output'],
                  status:              response_json['status'],
                  url:                 response_json['url']
-    end
-
-    # @api private
-    def jsonify_url(url)
-      uri = URI(url)
-      uri.path = Pathname.new(uri.path).sub_ext('.json').to_s
-      uri.to_s
     end
 
     # @api private

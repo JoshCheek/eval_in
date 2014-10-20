@@ -280,7 +280,7 @@ RSpec.describe EvalIn do
 
   describe '.jsonify_url' do
     def assert_transforms(initial_url, expected_url)
-      actual_url = EvalIn.__send__ :jsonify_url, initial_url
+      actual_url = EvalIn::HTTP.jsonify_url initial_url
       expect(actual_url).to eq expected_url
     end
 

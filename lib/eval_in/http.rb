@@ -6,6 +6,12 @@ module EvalIn
   module HTTP
     extend self
 
+    def jsonify_url(url)
+      uri = URI(url)
+      uri.path = Pathname.new(uri.path).sub_ext('.json').to_s
+      uri.to_s
+    end
+
     def get_request(raw_url, user_agent)
       generic_request_for raw_url:      raw_url,
                           request_type: Net::HTTP::Get,
