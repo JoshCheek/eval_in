@@ -159,7 +159,7 @@ Mocking for non-prod environments
 
 ### Wiring the mock in
 
-The mock that is provided will need to be set into place.
+The mock that is provided will need to be set into place (its interface is in the next section).
 If the code is directly doing `EvalIn.call(...)`, then it is
 a hard dependency, and there is no ablity to set the mock into place.
 
@@ -173,35 +173,14 @@ and your prod environment to give it the actual `EvalIn` that actually uses the 
 
 If this is still unclear, here is an example:
 
-```ruby
-# == before: hard dependency prevents you from giving a mock ==
-def get_output(code)
-  EvalIn.call(code, language: 'ruby/mri-2.1').output
-end
-
-# == after: receive the thing you're talking to ==
-def get_output(eval_in, code)
-  eval_in.call(code, language: 'ruby/mri-2.1').output
-end
-
-# in test, you call like this
-output = 'the output'
-assert_equal output, get_output(EvalIn::Mock.new(result: EvalIn::Result.new(output: output)), 'some code')
-
-# in prod you call like this:
-get_output(EvalIn, params[:code_sample])
-
-# in dev you call like this:
-get_output(EvalIn::Mock.new(languages: {'ruby/mri-2.1' => {program: RbConfig.ruby, args: []}}),
-           params[:code_sample])
-
-# Now those last_two are probably in the same controller, right?
-# How do you get it to do the right thing in the right env, then?
-# well, you pass it to your controller, the same way you passed the `get_output`
-# for example, you might do this in a rack middleware,
-# then have it get the service from the `env` hash
-# or set it in an environment initializer
-```
+* [Here](https://github.com/JoshCheek/miniature-octo-ironman/blob/8197568668dc815643d9612c8cdae2e326d80f58/lib/app.rb#L41-44)
+  we use whatever `EvalIn` was injected.
+* [Here](https://github.com/JoshCheek/miniature-octo-ironman/blob/8197568668dc815643d9612c8cdae2e326d80f58/config.prod.ru#L18)
+  we inject the real `EvalIn` for the prod environment.
+* [Here](https://github.com/JoshCheek/miniature-octo-ironman/blob/8197568668dc815643d9612c8cdae2e326d80f58/config.ru#L33-35)
+  we inject a mock that does evaluate code for the development environment.
+* [Here](https://github.com/JoshCheek/miniature-octo-ironman/blob/8197568668dc815643d9612c8cdae2e326d80f58/features/support/our_helpers.rb#L74-77)
+  we inject a mock result for the test environment.
 
 ### The provided mock
 
