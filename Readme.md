@@ -192,7 +192,7 @@ assert_equal output, get_output(EvalIn::Mock.new(result: EvalIn::Result.new(outp
 get_output(EvalIn, params[:code_sample])
 
 # in dev you call like this:
-get_output(EvalIn::Mock.new(languages: {'ruby/mri-2.1' => {program: 'ruby', args: []}}),
+get_output(EvalIn::Mock.new(languages: {'ruby/mri-2.1' => {program: RbConfig.ruby, args: []}}),
            params[:code_sample])
 
 # Now those last_two are probably in the same controller, right?
@@ -233,15 +233,21 @@ So you must provide it with a list of languages and how to execute them
 
 This is probably idea for a dev environment, the results will be the most realistic.
 
+**NOTE THAT THIS DOES NOT WORK ON JRUBY**
+
 ```ruby
 require 'eval_in/mock'
 
 # a mock that can execute Ruby code and C code
 eval_in = EvalIn::Mock.new(languages: {
-  'ruby/mri-2.1' => {program: 'ruby', args: []},
-  'c/gcc-4.9.1'  => {program: 'ruby', args: ['-e',
-                                             'system "gcc -x c -o /tmp/eval_in_c_example #{ARGV.first}"
-                                              exec   "/tmp/eval_in_c_example"']},
+  'ruby/mri-2.1' => {program: RbConfig.ruby,
+                     args: []
+                    },
+  'c/gcc-4.9.1'  => {program: RbConfig.ruby,
+                     args: ['-e',
+                            'system "gcc -x c -o /tmp/eval_in_c_example #{ARGV.first}"
+                             exec   "/tmp/eval_in_c_example"']
+                    },
 })
 
 eval_in.call 'puts "hello from ruby!"; exit 123', language: 'ruby/mri-2.1'
